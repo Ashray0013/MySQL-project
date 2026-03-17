@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Club Details - Smart Campus</title>
+    <style>
+        /* Keep all your existing styles - they're fine */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px);
+        }
+
+        /* Club Header */
+        .club-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .club-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+        }
+
+        .club-name {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .club-bio {
+            font-size: 18px;
+            line-height: 1.6;
+            opacity: 0.95;
+            max-width: 800px;
+        }
+
+        .club-stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+
+        .button-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .button-danger {
+            background: #ff4757;
+            color: white;
+        }
+
+        .button-danger:hover {
+            background: #ff6b81;
+            transform: translateY(-2px);
+        }
+
+        .button-success {
+            background: #26de81;
+            color: white;
+        }
+
+        .button-success:hover {
+            background: #20b570;
+            transform: translateY(-2px);
+        }
+
+        .button-warning {
+            background: #ffa502;
+            color: white;
+        }
+
+        .button-warning:hover {
+            background: #e09400;
+            transform: translateY(-2px);
+        }
+
+        .button-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .button-secondary:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Role Badges */
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+
+        .role-badge.coordinator {
+            background: #ffa502;
+            color: white;
+        }
+
+        .role-badge.subcoordinator {
+            background: #26de81;
+            color: white;
+        }
+
+        .role-badge.member {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Main Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f2f5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        /* Events List */
+        .event-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .event-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .event-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .event-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .event-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .event-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .event-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .event-button:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .event-button.small {
+            padding: 4px 12px;
+            font-size: 11px;
+        }
+
+        /* Registration Stats */
+        .registration-stats {
+            background: #e6f4ea;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #1e8e3e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .registration-bar {
+            flex: 1;
+            height: 6px;
+            background: #c3e6cb;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .registration-progress {
+            height: 100%;
+            background: #28a745;
+            border-radius: 3px;
+        }
+
+        /* Members List */
+        .members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .member-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .member-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .member-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .member-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .member-position {
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+        }
+
+        .member-position.coordinator {
+            background: #ffe0b2;
+            color: #ffa502;
+        }
+
+        .member-position.subcoordinator {
+            background: #d4edda;
+            color: #26de81;
+        }
+
+        .member-position.member {
+            background: #e6f4ea;
+            color: #667eea;
+        }
+
+        .member-roll {
+            font-size: 11px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        /* Timeline Section */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 25px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -34px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #667eea;
+        }
+
+        .timeline-item.upcoming::before {
+            background: #26de81;
+            border-color: #26de81;
+        }
+
+        .timeline-item.past::before {
+            background: #999;
+            border-color: #999;
+        }
+
+        .timeline-date {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .timeline-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .timeline-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            background: #f0f2f5;
+        }
+
+        /* About Section */
+        .about-content {
+            line-height: 1.8;
+            color: #555;
+        }
+
+        .objective-box {
+            background: #f0f2f5;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border-left: 4px solid #28a745;
+        }
+
+        .objective-title {
+            font-weight: 600;
+            color: #28a745;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Loading States */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Empty States */
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 10px;
+            opacity: 0.3;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 25px;
+            top: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .close-modal:hover {
+            color: #333;
+            transform: rotate(90deg);
+        }
+
+        .modal-title {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f2f5;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #eef2f6;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            animation: slideDown 0.3s;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .club-name {
+                font-size: 32px;
+            }
+            
+            .club-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="dashboard.html" class="back-btn">
+        ← Back to Dashboard
+    </a>
+    
+    <!-- Club Header -->
+    <div class="club-header">
+        <h1 class="club-name" id="club-name">Loading Club...</h1>
+        <p class="club-bio" id="club-bio"></p>
+        
+        <div class="club-stats">
+            <div class="stat-item">
+                <span class="stat-number" id="member-count">0</span>
+                <span class="stat-label">Members</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="event-count">0</span>
+                <span class="stat-label">Events</span>
+            </div>
+            <div class="stat-item" id="registrations-stat" style="display: none;">
+                <span class="stat-number" id="total-registrations">0</span>
+                <span class="stat-label">Registrations</span>
+            </div>
+        </div>
+
+        <div class="action-buttons" id="action-buttons">
+            <!-- Buttons will be dynamically added here -->
+        </div>
+    </div>
+
+    <!-- Tabs for different views -->
+    <div class="tabs" id="tabs">
+        <div class="tab active" onclick="switchTab('overview')">Overview</div>
+        <div class="tab" onclick="switchTab('events')">Events</div>
+        <div class="tab" onclick="switchTab('members')">Members</div>
+        <div class="tab" onclick="switchTab('timeline')">Timeline</div>
+        <div class="tab" id="manage-tab" style="display: none;" onclick="switchTab('manage')">Manage</div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="content-grid" id="overview-view">
+        <!-- Left Column -->
+        <div>
+            <!-- About Section -->
+            <div class="card">
+                <h3 class="card-title">📋 About the Club</h3>
+                <div class="about-content" id="about-content">
+                    <p id="club-description"></p>
+                    <div class="objective-box" id="objective-box" style="display: none;">
+                        <div class="objective-title">🎯 Objective</div>
+                        <p id="club-objective"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Events -->
+            <div class="card">
+                <h3 class="card-title">
+                    📅 Upcoming Events
+                    <span id="upcoming-count" style="font-size: 14px; color: #666;"></span>
+                </h3>
+                <div id="event-list">
+                    <div class="loading">Loading events...</div>
+                </div>
+            </div>
+
+            <!-- Past Events -->
+            <div class="card" id="past-events-card" style="display: none;">
+                <h3 class="card-title">📆 Past Events</h3>
+                <div id="past-event-list">
+                    <!-- Past events will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div>
+            <!-- Members Section -->
+            <div class="card">
+                <h3 class="card-title">
+                    👥 Members
+                    <span id="member-role-badge"></span>
+                </h3>
+                <div id="member-list">
+                    <div class="loading">Loading members...</div>
+                </div>
+            </div>
+
+            <!-- Club Info Card -->
+            <div class="card">
+                <h3 class="card-title">ℹ️ Club Information</h3>
+                <div id="club-info">
+                    <div style="margin-bottom: 10px;">
+                        <strong>Club ID:</strong> <span id="club-id"></span>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Established:</strong> <span id="club-established">2020</span>
+                    </div>
+                    <div>
+                        <strong>Category:</strong> <span id="club-category">Student Club</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Events View (Tab 2) -->
+    <div id="events-view" style="display: none;">
+        <div class="card">
+            <h3 class="card-title">
+                📅 All Events
+                <div>
+                    <button class="button button-success small" id="add-event-btn" style="display: none;" onclick="openAddEventModal()">+ Add Event</button>
+                </div>
+            </h3>
+            <div id="all-events-list">
+                <div class="loading">Loading events...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Members View (Tab 3) -->
+    <div id="members-view" style="display: none;">
+        <div class="card">
+            <h3 class="card-title">
+                👥 All Members
+                <div>
+                    <button class="button button-success small" id="manage-members-btn" style="display: none;" onclick="openManageMembersModal()">Manage Roles</button>
+                </div>
+            </h3>
+            <div id="all-members-list">
+                <div class="loading">Loading members...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline View (Tab 4) -->
+    <div id="timeline-view" style="display: none;">
+        <div class="card">
+            <h3 class="card-title">📊 Event Timeline</h3>
+            <div class="timeline" id="timeline-container">
+                <div class="loading">Loading timeline...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage View (Tab 5 - Only for Coordinators) -->
+    <div id="manage-view" style="display: none;">
+        <div class="card">
+            <h3 class="card-title">⚙️ Club Management</h3>
+            
+            <div style="margin-bottom: 30px;">
+                <h4 style="margin-bottom: 15px; color: #2c3e50;">Quick Actions</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <button class="button button-primary" onclick="openAddEventModal()">
+                        <span>📅</span> Create New Event
+                    </button>
+                    <button class="button button-warning" onclick="openManageMembersModal()">
+                        <span>👥</span> Manage Members
+                    </button>
+                    <button class="button button-success" onclick="viewRegistrations()">
+                        <span>📋</span> View Registrations
+                    </button>
+                    <button class="button button-secondary" onclick="exportClubData()">
+                        <span>📊</span> Export Data
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin-bottom: 15px; color: #2c3e50;">Registration Summary</h4>
+                <div id="registration-summary">
+                    <div class="loading">Loading registration data...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Event Modal -->
+<div id="addEventModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('addEventModal')">&times;</span>
+        <h3 class="modal-title">Create New Event</h3>
+        <form id="addEventForm" onsubmit="doNothing(event)">
+            <div class="form-group">
+                <label>Event Title *</label>
+                <input type="text" id="eventTitle" required placeholder="e.g., Coding Workshop">
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="eventDescription" placeholder="Describe the event..."></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input type="date" id="eventDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Time *</label>
+                    <input type="time" id="eventTime" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Venue *</label>
+                <input type="text" id="eventVenue" required placeholder="e.g., Seminar Hall">
+            </div>
+
+            <!-- Remove these fields as they're not in your database schema -->
+            <!-- 
+            <div class="form-group">
+                <label>Registration Deadline</label>
+                <input type="datetime-local" id="eventDeadline">
+            </div>
+
+            <div class="form-group">
+                <label>Max Participants (0 for unlimited)</label>
+                <input type="number" id="eventMaxParticipants" value="0" min="0">
+            </div>
+            -->
+
+            <input type="hidden" id="editingEventId" value="">
+            
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="button button-primary" style="flex: 1;" id="submitEventBtn">Create Event</button>
+                <button type="button" class="button button-danger" onclick="closeModal('addEventModal')" style="flex: 0.3;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Event Modal -->
+<div id="editEventModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('editEventModal')">&times;</span>
+        <h3 class="modal-title">Edit Event</h3>
+        <form id="editEventForm" onsubmit="updateEvent(event)">
+            <div class="form-group">
+                <label>Event Title *</label>
+                <input type="text" id="editEventTitle" required placeholder="e.g., Coding Workshop">
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="editEventDescription" placeholder="Describe the event..."></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input type="date" id="editEventDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Time *</label>
+                    <input type="time" id="editEventTime" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Venue *</label>
+                <input type="text" id="editEventVenue" required placeholder="e.g., Seminar Hall">
+            </div>
+
+            <!-- Remove these fields as they're not in your database schema -->
+            <!--
+            <div class="form-group">
+                <label>Registration Deadline</label>
+                <input type="datetime-local" id="editEventDeadline">
+            </div>
+
+            <div class="form-group">
+                <label>Max Participants (0 for unlimited)</label>
+                <input type="number" id="editEventMaxParticipants" value="0" min="0">
+            </div>
+            -->
+
+            <input type="hidden" id="editingEventId" value="">
+            
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="button button-warning" style="flex: 1;">Update Event</button>
+                <button type="button" class="button button-danger" onclick="closeModal('editEventModal')" style="flex: 0.3;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Manage Members Modal -->
+<div id="manageMembersModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('manageMembersModal')">&times;</span>
+        <h3 class="modal-title">Manage Member Roles</h3>
+        
+        <div id="members-list-container">
+            <div class="loading">Loading members...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Event Registrations Modal -->
+<div id="eventRegistrationsModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('eventRegistrationsModal')">&times;</span>
+        <h3 class="modal-title" id="registrationsEventTitle">Event Registrations</h3>
+        
+        <div id="registrations-list">
+            <div class="loading">Loading registrations...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Event Details Modal -->
+<div id="eventModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('eventModal')">&times;</span>
+        <h3 class="modal-title" id="modalEventTitle">Event Details</h3>
+        <div id="modalEventContent">
+            Loading...
+        </div>
+    </div>
+</div>
+
+<!-- Position Update Modal -->
+<div id="positionModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('positionModal')">&times;</span>
+        <h3 class="modal-title">Update Member Position</h3>
+        <form id="positionForm" onsubmit="updatePosition(event)">
+            <input type="hidden" id="updateUserId">
+            <div class="form-group">
+                <label>Select Position</label>
+                <select id="memberPosition" required>
+                    <option value="Member">Member</option>
+                    <option value="Sub-Coordinator">Sub-Coordinator</option>
+                    <option value="Coordinator">Coordinator</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="button button-primary" style="flex: 1;">Update Position</button>
+                <button type="button" class="button button-danger" onclick="closeModal('positionModal')" style="flex: 0.3;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteConfirmModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('deleteConfirmModal')">&times;</span>
+        <h3 class="modal-title">Confirm Delete</h3>
+        <p style="margin-bottom: 20px;">Are you sure you want to delete this event? This action cannot be undone.</p>
+        <div style="display: flex; gap: 10px;">
+            <button class="button button-danger" style="flex: 1;" onclick="confirmDeleteEvent()">Delete</button>
+            <button class="button button-secondary" style="flex: 1;" onclick="closeModal('deleteConfirmModal')">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Configuration
+    const API_BASE_URL = 'http://localhost:3000/api';
+    let currentUserId = localStorage.getItem('userId');
+    let currentClubId = null;
+    let isCurrentUserMember = false;
+    let userRole = 'member'; // 'coordinator', 'subcoordinator', 'member'
+    let clubMembers = [];
+    let clubEvents = [];
+    let eventToDelete = null;
+
+    // Check if user is logged in
+    if (!currentUserId) {
+        window.location.href = 'login.html';
+    }
+
+    // Modal functions
+    function openModal(modalId) {
+        document.getElementById(modalId).style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    };
+
+    // Show notification
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = type === 'success' ? 'success-message' : 'error-message';
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#d4edda' : '#f8d7da'};
+            color: ${type === 'success' ? '#155724' : '#721c24'};
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            z-index: 2000;
+            animation: slideIn 0.3s;
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    // Switch tabs
+    function switchTab(tabName) {
+        // Hide all views
+        document.getElementById('overview-view').style.display = 'none';
+        document.getElementById('events-view').style.display = 'none';
+        document.getElementById('members-view').style.display = 'none';
+        document.getElementById('timeline-view').style.display = 'none';
+        document.getElementById('manage-view').style.display = 'none';
+        
+        // Show selected view
+        document.getElementById(`${tabName}-view`).style.display = 'grid';
+        
+        // Update tab active state
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.textContent.toLowerCase().includes(tabName)) {
+                tab.classList.add('active');
+            }
+        });
+        
+        // Load tab-specific data
+        if (tabName === 'events') {
+            loadAllEvents();
+        } else if (tabName === 'members') {
+            loadAllMembers();
+        } else if (tabName === 'timeline') {
+            loadTimeline();
+        } else if (tabName === 'manage') {
+            loadRegistrationSummary();
+        }
+    }
+
+    // Load club details
+    async function loadClubDetails() {
+        const params = new URLSearchParams(window.location.search);
+        currentClubId = params.get('id');
+        console.log("Current Club ID:", currentClubId);
+
+        if (!currentClubId) {
+            showNotification("No Club ID provided!", 'error');
+            return;
+        }
+
+        try {
+            // Fetch all data in parallel
+            const [clubResponse, membersResponse, userMembershipsResponse] = await Promise.all([
+                fetch(`${API_BASE_URL}/clubs/${currentClubId}`),
+                fetch(`${API_BASE_URL}/club-members/${currentClubId}`),
+                fetch(`${API_BASE_URL}/user-memberships/${currentUserId}`)
+            ]);
+
+            if (!clubResponse.ok || !membersResponse.ok || !userMembershipsResponse.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const clubData = await clubResponse.json();
+            clubMembers = await membersResponse.json();
+            const userMemberships = await userMembershipsResponse.json();
+
+            // Check if current user is a member
+            isCurrentUserMember = userMemberships.includes(parseInt(currentClubId));
+            
+            // Determine user role
+            const currentUserMember = clubMembers.find(m => m.user_id == currentUserId);
+            if (currentUserMember) {
+                if (currentUserMember.position === 'Coordinator') {
+                    userRole = 'coordinator';
+                } else if (currentUserMember.position === 'Sub-Coordinator') {
+                    userRole = 'subcoordinator';
+                } else {
+                    userRole = 'member';
+                }
+            }
+
+            // Update header
+            document.getElementById('club-name').innerText = clubData.cname;
+            document.getElementById('club-bio').innerText = clubData.bio || 'No description provided.';
+            document.getElementById('member-count').innerText = clubMembers.length;
+            document.getElementById('event-count').innerText = clubData.events?.length || 0;
+            document.getElementById('club-id').innerText = currentClubId;
+
+            // Update about section
+            document.getElementById('club-description').innerText = clubData.bio || 'No description available.';
+            if (clubData.objective) {
+                document.getElementById('club-objective').innerText = clubData.objective;
+                document.getElementById('objective-box').style.display = 'block';
+            }
+
+            // Render action buttons based on role
+            renderActionButtons();
+
+            // Render members
+            renderMembers(clubMembers);
+
+            // Fetch and render events
+            await loadClubEvents();
+
+            // Show/hide manage tab based on role
+            if (userRole === 'coordinator' || userRole === 'subcoordinator') {
+                document.getElementById('manage-tab').style.display = 'inline-block';
+                document.getElementById('add-event-btn').style.display = 'inline-block';
+                
+                if (userRole === 'coordinator') {
+                    document.getElementById('manage-members-btn').style.display = 'inline-block';
+                }
+            }
+
+            // Add role badge
+            const roleBadge = document.getElementById('member-role-badge');
+            if (isCurrentUserMember) {
+                roleBadge.innerHTML = `<span class="role-badge ${userRole}">${userRole}</span>`;
+            }
+
+        } catch (error) {
+            console.error("Error loading club details:", error);
+            showNotification("Failed to load club details", 'error');
+        }
+    }
+
+    // Render action buttons based on role
+    function renderActionButtons() {
+        const buttonContainer = document.getElementById('action-buttons');
+        buttonContainer.innerHTML = '';
+
+        if (isCurrentUserMember) {
+            // Member buttons
+            if (userRole === 'coordinator') {
+                buttonContainer.innerHTML += `
+                    <button class="button button-success" onclick="openAddEventModal()">
+                        <span>📅</span> Create Event
+                    </button>
+                    <button class="button button-warning" onclick="openManageMembersModal()">
+                        <span>👥</span> Manage Members
+                    </button>
+                `;
+            } else if (userRole === 'subcoordinator') {
+                buttonContainer.innerHTML += `
+                    <button class="button button-success" onclick="openAddEventModal()">
+                        <span>📅</span> Create Event
+                    </button>
+                    <button class="button button-secondary" onclick="viewRegistrations()">
+                        <span>📋</span> Registrations
+                    </button>
+                `;
+            }
+            
+            buttonContainer.innerHTML += `
+                <button class="button button-danger" onclick="leaveClub()">
+                    <span>👋</span> Leave Club
+                </button>
+                <button class="button button-secondary" onclick="shareClub()">
+                    <span>📤</span> Share
+                </button>
+            `;
+        } else {
+            // Non-member button
+            buttonContainer.innerHTML = `
+                <button class="button button-primary" onclick="joinClub()">
+                    <span>➕</span> Join Club
+                </button>
+            `;
+        }
+    }
+
+    // Render members
+    function renderMembers(members) {
+        const memberDiv = document.getElementById('member-list');
+        
+        if (members.length === 0) {
+            memberDiv.innerHTML = `
+                <div class="empty-state">
+                    <div>👥</div>
+                    <p>No members yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        memberDiv.innerHTML = `
+            <div class="members-grid">
+                ${members.map(m => `
+                    <div class="member-card ${m.user_id == currentUserId ? 'current-user' : ''}">
+                        <div class="member-avatar">
+                            ${m.first_name ? m.first_name[0] : '?'}${m.last_name ? m.last_name[0] : ''}
+                        </div>
+                        <div class="member-name">${m.first_name} ${m.last_name}</div>
+                        <div class="member-position ${(m.position || 'member').toLowerCase()}">
+                            ${m.position || 'Member'}
+                        </div>
+                        <div class="member-roll">${m.roll_no || ''}</div>
+                        ${(userRole === 'coordinator' || (userRole === 'subcoordinator' && m.position !== 'Coordinator')) && m.user_id != currentUserId ? 
+                            `<button class="event-button small" style="margin-top: 10px;" onclick="openPositionModal(${m.user_id}, '${m.position}')">
+                                Edit Role
+                            </button>` : 
+                            ''
+                        }
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        // Highlight current user
+        if (document.querySelector('.current-user')) {
+            document.querySelector('.current-user').style.border = '2px solid #667eea';
+        }
+    }
+
+    // Load club events
+    async function loadClubEvents() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/club-activities/${currentClubId}`);
+            if (!response.ok) throw new Error('Failed to load events');
+            
+            clubEvents = await response.json();
+            
+            // Check registration status for each event
+            const eventsWithRegStatus = await Promise.all(clubEvents.map(async (event) => {
+                try {
+                    const regResponse = await fetch(`${API_BASE_URL}/events/check-registration/${currentUserId}/${event.event_id}`);
+                    const regStatus = await regResponse.json();
+                    return { ...event, is_registered: regStatus.is_registered };
+                } catch (error) {
+                    return { ...event, is_registered: false };
+                }
+            }));
+
+            const now = new Date();
+            const upcomingEvents = eventsWithRegStatus.filter(e => new Date(e.date_time) > now);
+            const pastEvents = eventsWithRegStatus.filter(e => new Date(e.date_time) <= now);
+
+            document.getElementById('upcoming-count').textContent = `(${upcomingEvents.length} upcoming)`;
+
+            // Render upcoming events
+            const eventDiv = document.getElementById('event-list');
+            if (upcomingEvents.length === 0) {
+                eventDiv.innerHTML = `
+                    <div class="empty-state">
+                        <div>📅</div>
+                        <p>No upcoming events</p>
+                    </div>
+                `;
+            } else {
+                eventDiv.innerHTML = upcomingEvents.map(event => `
+                    <div class="event-item">
+                        <div class="event-title">
+                            ${event.title}
+                            ${event.is_registered ? '<span class="role-badge member" style="margin-left: 10px;">Registered</span>' : ''}
+                            ${userRole === 'coordinator' || userRole === 'subcoordinator' ? 
+                                `<button class="event-button small" onclick="viewEventRegistrations(${event.event_id})">
+                                    View Registrations
+                                </button>` : 
+                                ''
+                            }
+                        </div>
+                        <div class="event-description">${event.about_event || 'No description available'}</div>
+                        <div class="event-meta">
+                            <span>📅 ${new Date(event.date_time).toLocaleDateString()}</span>
+                            <span>⏰ ${new Date(event.date_time).toLocaleTimeString()}</span>
+                            <span>📍 ${event.venue || 'TBA'}</span>
+                        </div>
+                        <div class="event-actions">
+                            <button class="event-button" onclick="showEventDetails(${event.event_id})">
+                                View Details
+                            </button>
+                            ${event.is_registered ? 
+                                `<button class="event-button small" style="background: #ff4757;" onclick="cancelEventRegistration(${event.event_id})">
+                                    Cancel
+                                </button>` : 
+                                ''
+                            }
+                            ${(userRole === 'coordinator' || userRole === 'subcoordinator') ? 
+                                `<button class="event-button small" onclick="openEditEventModal(${event.event_id})">
+                                    Edit
+                                </button>` : 
+                                ''
+                            }
+                            ${userRole === 'coordinator' ? 
+                                `<button class="event-button small" style="background: #ff4757;" onclick="deleteEvent(${event.event_id})">
+                                    Delete
+                                </button>` : 
+                                ''
+                            }
+                        </div>
+                        ${event.registered_count ? `
+                            <div class="registration-stats">
+                                <span>📊 ${event.registered_count} registered</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            }
+
+            // Render past events if any
+            if (pastEvents.length > 0) {
+                document.getElementById('past-events-card').style.display = 'block';
+                const pastDiv = document.getElementById('past-event-list');
+                pastDiv.innerHTML = pastEvents.slice(0, 3).map(event => `
+                    <div class="event-item" style="opacity: 0.8;">
+                        <div class="event-title">${event.title}</div>
+                        <div class="event-meta">
+                            <span>📅 ${new Date(event.date_time).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('past-events-card').style.display = 'none';
+            }
+
+        } catch (error) {
+            console.error("Error loading events:", error);
+            document.getElementById('event-list').innerHTML = '<div class="empty-state">Failed to load events</div>';
+        }
+    }
+
+    // Load all events for events tab
+    async function loadAllEvents() {
+        const eventsDiv = document.getElementById('all-events-list');
+        
+        if (clubEvents.length === 0) {
+            eventsDiv.innerHTML = '<div class="empty-state">No events found</div>';
+            return;
+        }
+
+        eventsDiv.innerHTML = clubEvents.map(event => {
+            const eventDate = new Date(event.date_time);
+            return `
+                <div class="event-item">
+                    <div class="event-title">${event.title}</div>
+                    <div class="event-meta">
+                        <span>📅 ${eventDate.toLocaleDateString()}</span>
+                        <span>⏰ ${eventDate.toLocaleTimeString()}</span>
+                        <span>📍 ${event.venue || 'TBA'}</span>
+                        ${event.registered_count ? `<span>👥 ${event.registered_count} registered</span>` : ''}
+                    </div>
+                    <div class="event-actions">
+                        <button class="event-button" onclick="showEventDetails(${event.event_id})">Details</button>
+                        ${(userRole === 'coordinator' || userRole === 'subcoordinator') ? 
+                            `<button class="event-button small" onclick="openEditEventModal(${event.event_id})">Edit</button>` : 
+                            ''
+                        }
+                        ${userRole === 'coordinator' ? 
+                            `<button class="event-button small" style="background: #ff4757;" onclick="deleteEvent(${event.event_id})">Delete</button>` : 
+                            ''
+                        }
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Load all members for members tab
+    function loadAllMembers() {
+        const membersDiv = document.getElementById('all-members-list');
+        
+        membersDiv.innerHTML = `
+            <div class="members-grid">
+                ${clubMembers.map(m => `
+                    <div class="member-card">
+                        <a href="visit-profile.html?id=${m.user_id}" style="text-decoration: none; color: inherit;">
+                            <div class="member-avatar">
+                                ${m.first_name ? m.first_name[0] : '?'}${m.last_name ? m.last_name[0] : ''}
+                            </div>
+                            <div class="member-name">${m.first_name} ${m.last_name}</div>
+                            <div class="member-position ${(m.position || 'member').toLowerCase()}">
+                                ${m.position || 'Member'}
+                            </div>
+                            <div class="member-roll">${m.roll_no || ''}</div>
+                        </a>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    // Load timeline
+    function loadTimeline() {
+        const timelineDiv = document.getElementById('timeline-container');
+        const now = new Date();
+        
+        const sortedEvents = [...clubEvents].sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
+        
+        if (sortedEvents.length === 0) {
+            timelineDiv.innerHTML = '<div class="empty-state">No events to display</div>';
+            return;
+        }
+        
+        timelineDiv.innerHTML = sortedEvents.map(event => {
+            const eventDate = new Date(event.date_time);
+            const isUpcoming = eventDate > now;
+            
+            return `
+                <div class="timeline-item ${isUpcoming ? 'upcoming' : 'past'}">
+                    <div class="timeline-date">${eventDate.toLocaleDateString()} at ${eventDate.toLocaleTimeString()}</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">${event.title}</div>
+                        <div class="timeline-desc">${event.about_event || ''}</div>
+                        <div style="margin-top: 8px; font-size: 12px; color: #888;">
+                            📍 ${event.venue || 'TBA'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Load registration summary for manage tab
+    async function loadRegistrationSummary() {
+        const summaryDiv = document.getElementById('registration-summary');
+        
+        try {
+            // Fetch registrations for each event
+            const registrationsPromises = clubEvents.map(event => 
+                fetch(`${API_BASE_URL}/events/${event.event_id}/registrations`).then(res => res.json())
+            );
+            
+            const allRegistrations = await Promise.all(registrationsPromises);
+            const totalRegistrations = allRegistrations.reduce((sum, regs) => sum + regs.length, 0);
+            
+            summaryDiv.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                    <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                        <div style="font-size: 32px; font-weight: bold; color: #667eea;">${clubEvents.length}</div>
+                        <div style="font-size: 12px; color: #666;">Total Events</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                        <div style="font-size: 32px; font-weight: bold; color: #26de81;">${totalRegistrations}</div>
+                        <div style="font-size: 12px; color: #666;">Total Registrations</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                        <div style="font-size: 32px; font-weight: bold; color: #ffa502;">${clubMembers.length}</div>
+                        <div style="font-size: 12px; color: #666;">Club Members</div>
+                    </div>
+                </div>
+                
+                <h4 style="margin: 30px 0 15px;">Event-wise Registrations</h4>
+                ${await Promise.all(clubEvents.map(async (event, index) => {
+                    const registrations = allRegistrations[index];
+                    return `
+                        <div style="margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>${event.title}</span>
+                                <span>${registrations.length} registrations</span>
+                            </div>
+                            <div class="registration-bar">
+                                <div class="registration-progress" style="width: ${Math.min((registrations.length / 50) * 100, 100)}%"></div>
+                            </div>
+                        </div>
+                    `;
+                })).then(html => html.join(''))}
+            `;
+        } catch (error) {
+            console.error('Error loading registration summary:', error);
+            summaryDiv.innerHTML = '<div class="empty-state">Failed to load registration data</div>';
+        }
+    }
+
+    // Join club
+    async function joinClub() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/joinClub`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    userId: parseInt(currentUserId), 
+                    clubId: parseInt(currentClubId)
+                })
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to join club');
+            }
+
+            showNotification(`✅ Successfully joined the club!`);
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+
+        } catch (error) {
+            console.error('Error joining club:', error);
+            showNotification(error.message || 'Could not join club', 'error');
+        }
+    }
+
+    // Leave club
+    async function leaveClub() {
+        if (!confirm('Are you sure you want to leave this club?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/leaveClub`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    userId: parseInt(currentUserId), 
+                    clubId: parseInt(currentClubId)
+                })
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to leave club');
+            }
+
+            showNotification('Successfully left the club');
+            
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1500);
+
+        } catch (error) {
+            console.error('Error leaving club:', error);
+            showNotification(error.message || 'Could not leave club', 'error');
+        }
+    }
+
+    // sample function
+    async function doNothing(event) {
+        // Create event (with page reload)
+        event.preventDefault(); // Prevents immediate browser refresh so we can finish the API call
+        console.log("Creating event...");
+        
+        // 1. Get values from form
+        const title = document.getElementById('eventTitle').value;
+        const about_event = document.getElementById('eventDescription').value;
+        const date = document.getElementById('eventDate').value;
+        const time = document.getElementById('eventTime').value;
+        const venue = document.getElementById('eventVenue').value;
+        
+        // 2. Validate required fields
+        if (!title || !date || !time || !venue) {
+            showNotification('Please fill in all required fields', 'error');
+            return;
+        }
+        
+        // 3. Prepare data object
+        const eventData = {
+            title: title,
+            about_event: about_event,
+            date_time: `${date}T${time}:00`,
+            venue: venue,
+            club_id: parseInt(currentClubId),
+            created_by: parseInt(currentUserId)
+        };
+
+        console.log("Sending event data:", eventData);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/events`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(eventData)
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to create event');
+            }
+
+            // 4. Success handling
+            showNotification('Event created successfully! Reloading...');
+            
+            // Clear the form (optional since we are reloading anyway)
+            document.getElementById('addEventForm').reset();
+            
+            // 5. RELOAD THE PAGE
+            // We use a small delay (1 second) so the user can actually see the success message
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+
+        } catch (error) {
+            console.error('Error creating event:', error);
+            showNotification(error.message || 'Failed to create event', 'error');
+        }
+    }
+
+    // Create event (for coordinators and sub-coordinators)
+    async function createEvent(event) {
+        event.preventDefault();
+        console.log("Creating event...");
+        
+        // Get values from form
+        const title = document.getElementById('eventTitle').value;
+        const about_event = document.getElementById('eventDescription').value;
+        const date = document.getElementById('eventDate').value;
+        const time = document.getElementById('eventTime').value;
+        const venue = document.getElementById('eventVenue').value;
+        
+        // Validate required fields
+        if (!title || !date || !time || !venue) {
+            showNotification('Please fill in all required fields', 'error');
+            return;
+        }
+        
+        // Only send fields that exist in your database schema
+        const eventData = {
+            title: title,
+            about_event: about_event,
+            date_time: `${date}T${time}:00`,
+            venue: venue,
+            club_id: parseInt(currentClubId),
+            created_by: parseInt(currentUserId)
+        };
+
+        console.log("Sending event data:", eventData);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/events`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(eventData)
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to create event');
+            }
+
+            showNotification('Event created successfully!');
+            closeModal('addEventModal');
+            document.getElementById('addEventForm').reset();
+            
+            // Refresh data
+            // await loadClubDetails();
+
+        } catch (error) {
+            console.error('Error creating event:', error);
+            showNotification(error.message || 'Failed to create event', 'error');
+        }
+    }
+
+    // Open edit event modal
+    async function openEditEventModal(eventId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/events/${eventId}`);
+            if (!response.ok) throw new Error('Failed to load event details');
+            
+            const event = await response.json();
+            
+            // Parse date and time
+            const eventDate = new Date(event.date_time);
+            const dateStr = eventDate.toISOString().split('T')[0];
+            const timeStr = eventDate.toTimeString().slice(0, 5);
+            
+            // Fill the edit form
+            document.getElementById('editEventTitle').value = event.title;
+            document.getElementById('editEventDescription').value = event.about_event || '';
+            document.getElementById('editEventDate').value = dateStr;
+            document.getElementById('editEventTime').value = timeStr;
+            document.getElementById('editEventVenue').value = event.venue || '';
+            
+            document.getElementById('editingEventId').value = eventId;
+            
+            openModal('editEventModal');
+            
+        } catch (error) {
+            console.error('Error loading event for edit:', error);
+            showNotification('Failed to load event details', 'error');
+        }
+    }
+
+    // Update event
+    async function updateEvent(event) {
+        event.preventDefault();
+
+        const eventId = document.getElementById('editingEventId').value;
+        
+        // Get values from form
+        const title = document.getElementById('editEventTitle').value;
+        const about_event = document.getElementById('editEventDescription').value;
+        const date = document.getElementById('editEventDate').value;
+        const time = document.getElementById('editEventTime').value;
+        const venue = document.getElementById('editEventVenue').value;
+
+        const eventData = {
+            title: title,
+            about_event: about_event,
+            date_time: `${date}T${time}:00`,
+            venue: venue,
+            userId: parseInt(currentUserId)
+        };
+
+        console.log("Updating event with data:", eventData);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/events/${eventId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(eventData)
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to update event');
+            }
+
+            showNotification('Event updated successfully!');
+            closeModal('editEventModal');
+            
+            // Refresh data
+            await loadClubDetails();
+
+        } catch (error) {
+            console.error('Error updating event:', error);
+            showNotification(error.message || 'Failed to update event', 'error');
+        }
+    }
+
+    // Delete event
+    function deleteEvent(eventId) {
+        console.log("Deleting event with ID:", eventId);
+        
+        // Check if it's a valid number
+        if (!eventId || isNaN(parseInt(eventId)) || eventId === 'register') {
+            console.error("Invalid event ID:", eventId);
+            showNotification("Invalid event ID", 'error');
+            return;
+        }
+        
+        eventToDelete = eventId;
+        openModal('deleteConfirmModal');
+    }
+
+    // Confirm delete event
+    async function confirmDeleteEvent() {
+        if (!eventToDelete) return;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/events/${eventToDelete}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: parseInt(currentUserId)
+                })
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to delete event');
+            }
+
+            showNotification('Event deleted successfully!');
+            closeModal('deleteConfirmModal');
+            eventToDelete = null;
+            
+            // Refresh data
+            await loadClubDetails();
+
+        } catch (error) {
+            console.error('Error deleting event:', error);
+            showNotification(error.message || 'Failed to delete event', 'error');
+        }
+    }
+
+    // View event registrations
+    async function viewEventRegistrations(eventId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/events/${eventId}/registrations`);
+            if (!response.ok) throw new Error('Failed to load registrations');
+            
+            const registrations = await response.json();
+            
+            const event = clubEvents.find(e => e.event_id === eventId);
+            
+            document.getElementById('registrationsEventTitle').textContent = event ? `${event.title} - Registrations` : 'Event Registrations';
+            
+            const content = registrations.length === 0 ? 
+                '<div class="empty-state">No registrations yet</div>' :
+                registrations.map(reg => `
+                    <div style="padding: 15px; background: #f8f9fa; margin-bottom: 10px; border-radius: 8px;">
+                        <div><strong>${reg.first_name} ${reg.last_name}</strong></div>
+                        <div style="font-size: 12px; color: #666;">${reg.roll_no || ''} | ${reg.email || ''}</div>
+                        <div style="font-size: 11px; color: #888;">Registered: ${new Date(reg.registered_at).toLocaleString()}</div>
+                    </div>
+                `).join('');
+            
+            document.getElementById('registrations-list').innerHTML = content;
+            openModal('eventRegistrationsModal');
+
+        } catch (error) {
+            console.error('Error loading registrations:', error);
+            showNotification('Failed to load registrations', 'error');
+        }
+    }
+
+    // Cancel event registration
+    async function cancelEventRegistration(eventId) {
+        console.log("Canceling registration for event:", eventId, "by user:", currentUserId);
+        
+        if (!confirm('Are you sure you want to cancel your registration for this event?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/register`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: parseInt(currentUserId),
+                    eventId: parseInt(eventId)
+                })
+            });
+
+            const data = await response.json();
+            console.log("Cancel registration response:", data);
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to cancel registration');
+            }
+
+            showNotification('Registration cancelled successfully!');
+            closeModal('eventModal');
+            
+            // Refresh data
+            await loadClubDetails();
+
+        } catch (error) {
+            console.error('Error canceling registration:', error);
+            showNotification(error.message || 'Failed to cancel registration', 'error');
+        }
+    }
+
+    // Register for event
+    async function registerForEvent(eventId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/events/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: parseInt(currentUserId),
+                    eventId: parseInt(eventId)
+                })
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to register');
+            }
+
+            showNotification('Successfully registered for the event!');
+            closeModal('eventModal');
+            
+            // Refresh data
+            await loadClubDetails();
+
+        } catch (error) {
+            console.error('Error registering:', error);
+            showNotification(error.message || 'Failed to register for event', 'error');
+        }
+    }
+
+    // Open add event modal
+    function openAddEventModal() {
+        // Set default date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('eventDate').value = today;
+        document.getElementById('eventTime').value = '18:00';
+        document.getElementById('editingEventId').value = '';
+        
+        openModal('addEventModal');
+    }
+
+    // Open manage members modal
+    function openManageMembersModal() {
+        const container = document.getElementById('members-list-container');
+        
+        container.innerHTML = clubMembers.map(m => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f8f9fa; margin-bottom: 10px; border-radius: 8px;">
+                <div>
+                    <strong>${m.first_name} ${m.last_name}</strong>
+                    <div style="font-size: 12px; color: #666;">${m.roll_no || ''}</div>
+                    <div style="font-size: 11px; color: #888;">${m.email || ''}</div>
+                </div>
+                <div>
+                    <span class="member-position ${(m.position || 'member').toLowerCase()}" style="margin-right: 10px;">
+                        ${m.position || 'Member'}
+                    </span>
+                    ${m.user_id != currentUserId ? 
+                        `<button class="event-button small" onclick="openPositionModal(${m.user_id}, '${m.position}')">
+                            Edit
+                        </button>` : 
+                        ''
+                    }
+                </div>
+            </div>
+        `).join('');
+        
+        openModal('manageMembersModal');
+    }
+
+    // Open position update modal
+    function openPositionModal(userId, currentPosition) {
+        document.getElementById('updateUserId').value = userId;
+        document.getElementById('memberPosition').value = currentPosition || 'Member';
+        openModal('positionModal');
+    }
+
+    // Update member position
+    async function updatePosition(event) {
+        event.preventDefault();
+
+        const userId = document.getElementById('updateUserId').value;
+        const position = document.getElementById('memberPosition').value;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/club-members/position`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: parseInt(userId),
+                    clubId: parseInt(currentClubId),
+                    position: position,
+                    updatedBy: parseInt(currentUserId)
+                })
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to update position');
+            }
+
+            showNotification('Position updated successfully!');
+            closeModal('positionModal');
+            closeModal('manageMembersModal');
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+
+        } catch (error) {
+            console.error('Error updating position:', error);
+            showNotification(error.message || 'Failed to update position', 'error');
+        }
+    }
+
+    // Show event details
+    async function showEventDetails(eventId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/events/${eventId}`);
+            if (!response.ok) throw new Error('Failed to load event details');
+            
+            const event = await response.json();
+
+            // Check if user is registered for this event
+            const checkRegResponse = await fetch(`${API_BASE_URL}/events/check-registration/${currentUserId}/${eventId}`);
+            const regStatus = await checkRegResponse.json();
+            const isRegistered = regStatus.is_registered;
+
+            document.getElementById('modalEventTitle').innerText = event.title;
+            
+            const content = `
+                <div style="margin-bottom: 20px;">
+                    <p style="line-height: 1.6; margin-bottom: 20px;">${event.about_event || 'No description available.'}</p>
+                    
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                        <div style="margin-bottom: 8px;"><strong>📅 Date:</strong> ${new Date(event.date_time).toLocaleDateString()}</div>
+                        <div style="margin-bottom: 8px;"><strong>⏰ Time:</strong> ${new Date(event.date_time).toLocaleTimeString()}</div>
+                        <div style="margin-bottom: 8px;"><strong>📍 Venue:</strong> ${event.venue || 'TBA'}</div>
+                        <div><strong>🎪 Organized by:</strong> ${event.club_name || event.fest_name || 'Campus'}</div>
+                        ${event.registered_count ? `
+                            <div style="margin-top: 8px;"><strong>👥 Registrations:</strong> ${event.registered_count}</div>
+                        ` : ''}
+                    </div>
+
+                    ${userRole === 'coordinator' || userRole === 'subcoordinator' ? `
+                        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                            <button class="button button-secondary small" onclick="openEditEventModal(${event.event_id})">
+                                Edit Event
+                            </button>
+                            <button class="button button-warning small" onclick="viewEventRegistrations(${event.event_id})">
+                                View Registrations
+                            </button>
+                            ${userRole === 'coordinator' ? `
+                                <button class="button button-danger small" onclick="deleteEvent(${event.event_id})">
+                                    Delete Event
+                                </button>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+
+                    ${isRegistered ? 
+                        `<button class="button button-danger" onclick="cancelEventRegistration(${event.event_id})" style="width: 100%;">
+                            ❌ Cancel Registration
+                        </button>` : 
+                        `<button class="button button-primary" onclick="registerForEvent(${event.event_id})" style="width: 100%;">
+                            📝 Register for Event
+                        </button>`
+                    }
+                </div>
+            `;
+
+            document.getElementById('modalEventContent').innerHTML = content;
+            openModal('eventModal');
+
+        } catch (error) {
+            console.error('Error loading event details:', error);
+            showNotification('Failed to load event details', 'error');
+        }
+    }
+
+    // View all registrations (for manage tab)
+    function viewRegistrations() {
+        switchTab('manage');
+    }
+
+    // Export club data
+    function exportClubData() {
+        const clubName = document.getElementById('club-name').innerText;
+        const data = {
+            club: {
+                name: clubName,
+                members: clubMembers,
+                events: clubEvents,
+                exported_at: new Date().toISOString()
+            }
+        };
+        
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${clubName.replace(/\s+/g, '-')}-data.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        showNotification('Club data exported successfully!');
+    }
+
+    // Share club
+    function shareClub() {
+        const clubName = document.getElementById('club-name').innerText;
+        const url = window.location.href;
+        
+        navigator.clipboard.writeText(`Check out ${clubName} on Smart Campus: ${url}`)
+            .then(() => {
+                showNotification('Club link copied to clipboard!');
+            })
+            .catch(() => {
+                showNotification('Could not copy link', 'error');
+            });
+    }
+
+    // Load data when page loads
+    window.onload = loadClubDetails;
+</script>
+</body>
+</html>

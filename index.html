@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Campus - Student Hub</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    /* Animated Background */
+    .bg-bubbles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .bg-bubbles li {
+      position: absolute;
+      list-style: none;
+      display: block;
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.15);
+      bottom: -160px;
+      animation: square 25s infinite;
+      transition-timing-function: linear;
+      border-radius: 50%;
+    }
+
+    .bg-bubbles li:nth-child(1) {
+      left: 10%;
+      width: 80px;
+      height: 80px;
+      animation-delay: 0s;
+    }
+
+    .bg-bubbles li:nth-child(2) {
+      left: 20%;
+      width: 60px;
+      height: 60px;
+      animation-delay: 2s;
+      animation-duration: 17s;
+    }
+
+    .bg-bubbles li:nth-child(3) {
+      left: 25%;
+      width: 100px;
+      height: 100px;
+      animation-delay: 4s;
+    }
+
+    .bg-bubbles li:nth-child(4) {
+      left: 40%;
+      width: 50px;
+      height: 50px;
+      animation-delay: 0s;
+      animation-duration: 20s;
+    }
+
+    .bg-bubbles li:nth-child(5) {
+      left: 70%;
+      width: 70px;
+      height: 70px;
+      animation-delay: 0s;
+    }
+
+    .bg-bubbles li:nth-child(6) {
+      left: 80%;
+      width: 120px;
+      height: 120px;
+      animation-delay: 3s;
+    }
+
+    .bg-bubbles li:nth-child(7) {
+      left: 32%;
+      width: 160px;
+      height: 160px;
+      animation-delay: 7s;
+    }
+
+    .bg-bubbles li:nth-child(8) {
+      left: 55%;
+      width: 45px;
+      height: 45px;
+      animation-delay: 15s;
+      animation-duration: 40s;
+    }
+
+    .bg-bubbles li:nth-child(9) {
+      left: 15%;
+      width: 90px;
+      height: 90px;
+      animation-delay: 2s;
+      animation-duration: 35s;
+    }
+
+    .bg-bubbles li:nth-child(10) {
+      left: 90%;
+      width: 55px;
+      height: 55px;
+      animation-delay: 0s;
+      animation-duration: 30s;
+    }
+
+    @keyframes square {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-1000px) rotate(600deg);
+        opacity: 0;
+      }
+    }
+
+    /* Main Content */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navigation */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+      margin-bottom: 60px;
+      animation: fadeInDown 0.8s ease;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: bold;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 10px 20px;
+      border-radius: 40px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 15px;
+    }
+
+    .nav-btn {
+      padding: 10px 25px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 16px;
+    }
+
+    .nav-btn.login {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-btn.login:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .nav-btn.signup {
+      background: white;
+      color: #667eea;
+      border: 1px solid transparent;
+    }
+
+    .nav-btn.signup:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Hero Section */
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 40px;
+      margin-bottom: 80px;
+      flex-wrap: wrap;
+    }
+
+    .hero-content {
+      flex: 1;
+      min-width: 300px;
+      animation: fadeInLeft 1s ease;
+    }
+
+    @keyframes fadeInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .hero-content h1 {
+      font-size: 52px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      line-height: 1.2;
+      background: linear-gradient(to right, #fff, #e0e0ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-content p {
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      opacity: 0.9;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .hero-btn {
+      padding: 15px 35px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hero-btn.primary {
+      background: white;
+      color: #667eea;
+    }
+
+    .hero-btn.primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-btn.secondary {
+      background: transparent;
+      color: white;
+      border: 2px solid white;
+    }
+
+    .hero-btn.secondary:hover {
+      background: white;
+      color: #667eea;
+      transform: translateY(-3px);
+    }
+
+    .hero-image {
+      flex: 1;
+      min-width: 300px;
+      animation: fadeInRight 1s ease;
+      text-align: center;
+    }
+
+    @keyframes fadeInRight {
+      from {
+        opacity: 0;
+        transform: translateX(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .hero-image img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 20px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .image-placeholder {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 60px 40px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .image-placeholder .emoji {
+      font-size: 80px;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .image-placeholder h3 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .image-placeholder p {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Features Section */
+    .features {
+      margin-bottom: 80px;
+      animation: fadeInUp 1s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .section-title h2 {
+      font-size: 36px;
+      margin-bottom: 15px;
+    }
+
+    .section-title p {
+      font-size: 18px;
+      opacity: 0.9;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px);
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .feature-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      font-size: 22px;
+      margin-bottom: 15px;
+    }
+
+    .feature-card p {
+      opacity: 0.8;
+      line-height: 1.6;
+    }
+
+    /* Stats Section */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      margin-bottom: 80px;
+      animation: fadeInUp 1.2s ease;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      background: linear-gradient(to right, #fff, #e0e0ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stat-label {
+      font-size: 16px;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* CTA Section */
+    .cta-section {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 30px;
+      padding: 60px 40px;
+      text-align: center;
+      margin-bottom: 60px;
+      animation: fadeInUp 1.4s ease;
+    }
+
+    .cta-section h2 {
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+
+    .cta-section p {
+      font-size: 18px;
+      opacity: 0.9;
+      margin-bottom: 30px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .cta-btn {
+      padding: 15px 40px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 18px;
+      transition: all 0.3s;
+    }
+
+    .cta-btn.primary {
+      background: white;
+      color: #667eea;
+    }
+
+    .cta-btn.primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .cta-btn.secondary {
+      background: transparent;
+      color: white;
+      border: 2px solid white;
+    }
+
+    .cta-btn.secondary:hover {
+      background: white;
+      color: #667eea;
+      transform: translateY(-3px);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: auto;
+      padding: 40px 0 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+      animation: fadeInUp 1.6s ease;
+    }
+
+    .footer-column h4 {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    .footer-column ul {
+      list-style: none;
+    }
+
+    .footer-column ul li {
+      margin-bottom: 10px;
+    }
+
+    .footer-column ul li a {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .footer-column ul li a:hover {
+      color: white;
+    }
+
+    .copyright {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding-top: 20px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 14px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        padding: 20px;
+      }
+
+      .navbar {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+      }
+
+      .hero-content h1 {
+        font-size: 36px;
+      }
+
+      .hero-buttons {
+        justify-content: center;
+      }
+
+      .section-title h2 {
+        font-size: 28px;
+      }
+
+      .cta-section {
+        padding: 40px 20px;
+      }
+
+      .cta-section h2 {
+        font-size: 28px;
+      }
+
+      .footer {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-content h1 {
+        font-size: 28px;
+      }
+
+      .hero-btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .stat-number {
+        font-size: 36px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated Background Bubbles -->
+  <ul class="bg-bubbles">
+    <li></li>
+    <li></li>
+    <li></li>
+    <li></li>
+    <li></li>
+    <li></li>
+    <li></li>
+    <li></li>
+    <li></li>
+    <li></li>
+  </ul>
+
+  <div class="container">
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="logo">🎓 Smart Campus</div>
+      <div class="nav-buttons">
+        <a href="login.html" class="nav-btn login">Login</a>
+        <a href="signup.html" class="nav-btn signup">Sign Up</a>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero">
+      <div class="hero-content">
+        <h1>Connect, Collaborate & Create on Campus</h1>
+        <p>Your all-in-one platform for managing student life - from club memberships to event registrations, all in one place.</p>
+        <div class="hero-buttons">
+          <a href="signup.html" class="hero-btn primary">
+            <span>Get Started</span>
+            <span>→</span>
+          </a>
+          <a href="#features" class="hero-btn secondary" onclick="scrollToFeatures()">
+            <span>Learn More</span>
+          </a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <div class="image-placeholder">
+          <span class="emoji">🎓</span>
+          <h3>Smart Campus Hub</h3>
+          <p>Where students connect and thrive</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Features Section -->
+    <div id="features" class="features">
+      <div class="section-title">
+        <h2>Why Choose Smart Campus?</h2>
+        <p>Everything you need to make the most of your college experience</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📚</div>
+          <h3>Explore Clubs</h3>
+          <p>Discover and join clubs that match your interests. From technical to cultural, find your community.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📅</div>
+          <h3>Track Events</h3>
+          <p>Never miss an important event. Get updates on workshops, fests, and campus activities.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">👥</div>
+          <h3>Build Network</h3>
+          <p>Connect with like-minded students, collaborate on projects, and grow your professional network.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>Track Progress</h3>
+          <p>Monitor your participation in clubs and events. Build your campus portfolio.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-number" id="statClubs">10+</div>
+        <div class="stat-label">Active Clubs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statEvents">50+</div>
+        <div class="stat-label">Events Yearly</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statStudents">500+</div>
+        <div class="stat-label">Active Students</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statFests">5+</div>
+        <div class="stat-label">Annual Fests</div>
+      </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="cta-section">
+      <h2>Ready to get started?</h2>
+      <p>Join the Smart Campus community today and make the most of your college journey.</p>
+      <div class="cta-buttons">
+        <a href="signup.html" class="cta-btn primary">Create Account</a>
+        <a href="login.html" class="cta-btn secondary">Sign In</a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-column">
+        <h4>About</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Blog</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h4>Features</h4>
+        <ul>
+          <li><a href="#">Clubs</a></li>
+          <li><a href="#">Events</a></li>
+          <li><a href="#">Profile</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">FAQs</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="#">Twitter</a></li>
+          <li><a href="#">LinkedIn</a></li>
+          <li><a href="#">Instagram</a></li>
+        </ul>
+      </div>
+      <div class="copyright">
+        © 2024 Smart Campus Hub. All rights reserved.
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Smooth scroll to features section
+    function scrollToFeatures() {
+      document.getElementById('features').scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+
+    // Animate stats numbers on scroll
+    function animateStats() {
+      const stats = document.querySelectorAll('.stat-number');
+      stats.forEach(stat => {
+        const value = stat.textContent;
+        if (value.includes('+')) {
+          const num = parseInt(value);
+          let current = 0;
+          const increment = num / 50;
+          const timer = setInterval(() => {
+            current += increment;
+            if (current >= num) {
+              stat.textContent = value;
+              clearInterval(timer);
+            } else {
+              stat.textContent = Math.floor(current) + '+';
+            }
+          }, 20);
+        }
+      });
+    }
+
+    // Check if user is already logged in
+    function checkLoginStatus() {
+      const userId = localStorage.getItem('userId');
+      const token = localStorage.getItem('token');
+      
+      if (userId && token) {
+        // Show logged-in version
+        document.querySelector('.nav-buttons').innerHTML = `
+          <a href="dashboard.html" class="nav-btn login">Dashboard</a>
+          <a href="profile.html" class="nav-btn signup">Profile</a>
+        `;
+      }
+    }
+
+    // Load stats from API
+    async function loadStats() {
+      try {
+        const response = await fetch('http://localhost:3000/api/stats/1');
+        if (response.ok) {
+          const stats = await response.json();
+          document.getElementById('statClubs').textContent = stats.totalClubs + '+';
+          document.getElementById('statEvents').textContent = stats.totalEvents + '+';
+          document.getElementById('statStudents').textContent = '500+'; // You might want to add this to API
+          document.getElementById('statFests').textContent = '5+'; // You might want to add this to API
+        }
+      } catch (error) {
+        console.log('Using default stats');
+      }
+    }
+
+    // Intersection Observer for animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    });
+
+    document.querySelectorAll('.feature-card, .stat-card').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(30px)';
+      el.style.transition = 'all 0.6s ease';
+      observer.observe(el);
+    });
+
+    // Initialize
+    window.onload = function() {
+      checkLoginStatus();
+      loadStats();
+      
+      // Trigger animations after a small delay
+      setTimeout(() => {
+        animateStats();
+      }, 500);
+    };
+  </script>
+</body>
+</html>

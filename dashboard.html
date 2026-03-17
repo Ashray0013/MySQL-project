@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Campus Dashboard - Dynamic Hub</title>
+    <style>
+        /* Keep all your existing styles - they're fine */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: white;
+            border-radius: 15px;
+            padding: 15px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+
+        /* Search Bar */
+        .search-container {
+            flex: 1;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: #f0f2f5;
+            border-radius: 30px;
+            padding: 5px 5px 5px 20px;
+            transition: 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .search-box:focus-within {
+            background: white;
+            border-color: #667eea;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 12px 0;
+            font-size: 15px;
+            outline: none;
+            color: #333;
+        }
+
+        .search-box input::placeholder {
+            color: #999;
+            font-style: italic;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Search Results Dropdown */
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 15px;
+            margin-top: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .search-results.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .search-category {
+            padding: 15px 20px 5px;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #667eea;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eef2f6;
+        }
+
+        .search-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: 0.2s;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .search-item:hover {
+            background: #f8f9fa;
+        }
+
+        .search-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-item-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .search-item-icon {
+            width: 40px;
+            height: 40px;
+            background: #f0f2f5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #667eea;
+        }
+
+        .search-item-info {
+            flex: 1;
+        }
+
+        .search-item-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 3px;
+        }
+
+        .search-item-subtitle {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .search-item-type {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: #e6f4ea;
+            color: #1e8e3e;
+            font-weight: 500;
+        }
+
+        .search-no-results {
+            padding: 30px;
+            text-align: center;
+            color: #999;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-badge {
+            background: #f0f2f5;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .user-badge:hover {
+            background: #e1e4e8;
+            transform: translateY(-2px);
+        }
+
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: #ff6b81;
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+
+        .left-section {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .right-section {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .column {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: 0.3s;
+        }
+
+        .column:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+        }
+
+        h2 {
+            color: #2c3e50;
+            border-bottom: 3px solid #f0f2f5;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2 i {
+            color: #667eea;
+        }
+
+        .card {
+            border: 1px solid #eef2f6;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.1);
+        }
+
+        .club-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .club-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .member-badge {
+            background: #e6f4ea;
+            color: #1e8e3e;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .club-bio {
+            color: #666;
+            font-size: 14px;
+            margin: 10px 0;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .club-stats {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            color: #888;
+            font-size: 13px;
+        }
+
+        .club-stats span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .button.secondary {
+            background: white;
+            color: #667eea;
+            border: 1px solid #667eea;
+        }
+
+        .button.secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .button.small {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .button.danger {
+            background: #ff4757;
+            color: white;
+            border: none;
+        }
+
+        .button.danger:hover {
+            background: #ff6b81;
+        }
+
+        .event-tag {
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            color: #667eea;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .event-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .event-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .event-details span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 25px;
+            top: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .close-modal:hover {
+            color: #333;
+            transform: rotate(90deg);
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f2f5;
+        }
+
+        .modal-header h3 {
+            color: #2c3e50;
+            font-size: 24px;
+        }
+
+        .modal-body {
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .activity-item {
+            padding: 15px;
+            border-left: 3px solid #667eea;
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .activity-date {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .activity-desc {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .member-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .member-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 13px;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #d4edda;
+            color: #155724;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            z-index: 2000;
+            animation: slideIn 0.3s;
+        }
+
+        .error-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            z-index: 2000;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 10px;
+            opacity: 0.3;
+        }
+
+        .welcome-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .welcome-banner h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .welcome-banner p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .registration-badge {
+            display: inline-block;
+            background: #fff3cd;
+            color: #856404;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .profile-link {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .search-container {
+                width: 100%;
+                max-width: none;
+            }
+            
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo" onclick="window.location.href='dashboard.html'">🎓 Smart Campus Hub</div>
+        
+        <!-- Search Bar -->
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search clubs, users by name or roll number..." autocomplete="off">
+                <button class="search-btn" onclick="performSearch()">
+                    <span>🔍</span> Search
+                </button>
+            </div>
+            <div id="searchResults" class="search-results"></div>
+        </div>
+
+        <div class="user-info">
+            <div class="user-badge" onclick="window.location.href='profile.html'">
+                <span class="user-avatar" id="userAvatar"></span>
+                <span id="userName">Loading...</span>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="left-section">
+            <!-- Welcome Banner -->
+            <div class="welcome-banner" id="welcomeBanner">
+                <h1>Welcome back, <span id="welcomeName">User</span>!</h1>
+                <p>Explore clubs, join activities, and connect with your campus community.</p>
+            </div>
+
+            <!-- Explore Clubs Section -->
+            <div class="column">
+                <h2>
+                    <i>📚</i> Explore Clubs
+                    <span style="margin-left: auto; font-size: 14px; color: #666;" id="clubCount"></span>
+                </h2>
+                <div class="filter-bar">
+                    <button class="filter-btn active" data-filter="all">All Clubs</button>
+                    <button class="filter-btn" data-filter="technical">Technical</button>
+                    <button class="filter-btn" data-filter="cultural">Cultural</button>
+                    <button class="filter-btn" data-filter="sports">Sports</button>
+                </div>
+                <div id="club-list" class="club-list">
+                    <div class="loading">Loading clubs...</div>
+                </div>
+            </div>
+
+            <!-- My Joined Clubs Activities -->
+            <div class="column">
+                <h2>
+                    <i>⚡</i> My Club Activities
+                    <span style="margin-left: auto; font-size: 14px; color: #666;" id="activityCount"></span>
+                </h2>
+                <div id="joined-clubs-activities">
+                    <div class="loading">Loading your activities...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-section">
+            <!-- Upcoming Events -->
+            <div class="column">
+                <h2>
+                    <i>📅</i> Upcoming Events
+                    <span style="margin-left: auto; font-size: 14px; color: #666;" id="eventCount"></span>
+                </h2>
+                <div id="event-list">
+                    <div class="loading">Loading events...</div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="column">
+                <h2><i>📊</i> Dashboard Stats</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statClubs">0</div>
+                        <div class="stat-label">Total Clubs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statEvents">0</div>
+                        <div class="stat-label">Total Events</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statJoined">0</div>
+                        <div class="stat-label">Joined Clubs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statUpcoming">0</div>
+                        <div class="stat-label">Upcoming Events</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Details Modal -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('eventModal')">&times;</span>
+            <div class="modal-header">
+                <h3 id="modalEventTitle">Event Details</h3>
+            </div>
+            <div class="modal-body" id="modalEventContent">
+                Loading...
+            </div>
+        </div>
+    </div>
+
+    <!-- Club Details Modal -->
+    <div id="clubModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('clubModal')">&times;</span>
+            <div class="modal-header">
+                <h3 id="modalClubTitle">Club Details</h3>
+            </div>
+            <div class="modal-body" id="modalClubContent">
+                Loading...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:3000/api';
+        let currentUserId = localStorage.getItem('userId');
+        let currentUser = null;
+        let joinedClubIds = [];
+        let allClubs = [];
+        let allEvents = [];
+        let currentFilter = 'all';
+        let searchTimeout = null;
+
+        // Check if user is logged in
+        if (!currentUserId) {
+            window.location.href = 'login.html';
+        }
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        };
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = type === 'success' ? 'success-message' : 'error-message';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('userId');
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        // Load user profile
+        async function loadUserProfile() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/profile/${currentUserId}`);
+                if (!response.ok) throw new Error('Failed to load user profile');
+                
+                const data = await response.json();
+                currentUser = data;
+                
+                // Update user display
+                document.getElementById('userName').textContent = data.first_name || 'User';
+                document.getElementById('welcomeName').textContent = data.first_name || 'User';
+                
+                // Set avatar initials
+                const avatar = document.getElementById('userAvatar');
+                if (data.first_name) {
+                    avatar.textContent = data.first_name[0];
+                    if (data.last_name) {
+                        avatar.textContent += data.last_name[0];
+                    }
+                } else {
+                    avatar.textContent = '?';
+                }
+                
+            } catch (error) {
+                console.error('Error loading user profile:', error);
+                showNotification('Failed to load user profile', 'error');
+            }
+        }
+
+        // Redirect to club page
+        function viewClub(clubId) {
+            window.location.href = `club.html?id=${clubId}`;
+        }
+
+        // Redirect to visit profile page
+        function viewProfile(userId) {
+            window.location.href = `visit-profile.html?id=${userId}`;
+        }
+
+        // Check if user is registered for an event
+        async function checkEventRegistration(eventId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/events/check-registration/${currentUserId}/${eventId}`);
+                if (!response.ok) return false;
+                
+                const data = await response.json();
+                return data.is_registered;
+            } catch (error) {
+                console.error('Error checking registration:', error);
+                return false;
+            }
+        }
+
+        // Show event details in modal
+        async function showEventDetails(eventId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/events/${eventId}`);
+                if (!response.ok) throw new Error('Failed to load event details');
+                
+                const event = await response.json();
+                const isRegistered = await checkEventRegistration(eventId);
+                
+                document.getElementById('modalEventTitle').textContent = event.title;
+                
+                const organizer = event.club_name || event.fest_name || 'Campus';
+                const content = `
+                    <div>
+                        <span class="event-tag">${new Date(event.date_time).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                        
+                        <h4 style="margin: 20px 0 10px; color: #2c3e50;">About</h4>
+                        <p style="line-height: 1.6;">${event.about_event || 'No description available.'}</p>
+                        
+                        <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                            <div style="margin-bottom: 8px;"><strong>📍 Venue:</strong> ${event.venue || 'TBA'}</div>
+                            <div style="margin-bottom: 8px;"><strong>⏰ Time:</strong> ${new Date(event.date_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
+                            <div><strong>🎪 Organized by:</strong> ${organizer}</div>
+                            <div><strong>👥 Registered:</strong> ${event.registered_count || 0} attendees</div>
+                        </div>
+
+                        ${isRegistered ? 
+                            `<button class="button danger" onclick="cancelEventRegistration(${event.event_id})" style="width: 100%; margin-top: 20px;">
+                                ❌ Cancel Registration
+                            </button>` : 
+                            `<button class="button" onclick="registerForEvent(${event.event_id})" style="width: 100%; margin-top: 20px;">
+                                📝 Register for this event
+                            </button>`
+                        }
+                    </div>
+                `;
+                
+                document.getElementById('modalEventContent').innerHTML = content;
+                openModal('eventModal');
+            } catch (error) {
+                console.error('Error fetching event details:', error);
+                showNotification('Could not load event details.', 'error');
+            }
+        }
+
+        // Register for event
+        async function registerForEvent(eventId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/events/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: parseInt(currentUserId),
+                        eventId: parseInt(eventId)
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to register');
+                }
+
+                showNotification('✅ Successfully registered for the event!');
+                closeModal('eventModal');
+                
+                // Refresh events to update registration status
+                await loadData();
+            } catch (error) {
+                console.error('Error registering:', error);
+                showNotification(error.message || '❌ Failed to register for event', 'error');
+            }
+        }
+
+        // Cancel event registration
+        async function cancelEventRegistration(eventId) {
+            console.log("Canceling registration for event:", eventId, "by user:", currentUserId);
+            
+            if (!confirm('Are you sure you want to cancel your registration for this event?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/register`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: parseInt(currentUserId),
+                        eventId: parseInt(eventId)
+                    })
+                });
+
+                const data = await response.json();
+                console.log("Cancel registration response:", data);
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to cancel registration');
+                }
+
+                showNotification('Registration cancelled successfully!');
+                closeModal('eventModal');
+                
+                // Refresh data
+                await loadData();
+
+            } catch (error) {
+                console.error('Error canceling registration:', error);
+                showNotification(error.message || 'Failed to cancel registration', 'error');
+            }
+        }
+
+        // Join club
+        async function joinClub(clubId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/joinClub`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        userId: parseInt(currentUserId),
+                        clubId: parseInt(clubId)
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to join club');
+                }
+
+                const club = allClubs.find(c => c.club_id === clubId);
+                showNotification(`✅ Successfully joined ${club.cname}!`);
+                
+                // Update local data
+                joinedClubIds.push(parseInt(clubId));
+                
+                // Refresh displays
+                await loadData();
+                
+            } catch (error) {
+                console.error('Error joining club:', error);
+                showNotification(error.message || '❌ Could not join club', 'error');
+            }
+        }
+
+        // Filter clubs
+        function filterClubs(filter) {
+            currentFilter = filter;
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filter === filter) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Re-render clubs with filter
+            renderClubs();
+        }
+
+        // Render clubs with current filter
+        function renderClubs() {
+            let filteredClubs = allClubs;
+            
+            if (currentFilter !== 'all') {
+                filteredClubs = allClubs.filter(club => {
+                    const name = club.cname.toLowerCase();
+                    const bio = (club.bio || '').toLowerCase();
+                    
+                    if (currentFilter === 'technical') {
+                        return name.includes('coding') || name.includes('robotics') || name.includes('ai') || name.includes('tech') || name.includes('ml') || bio.includes('technical');
+                    } else if (currentFilter === 'cultural') {
+                        return name.includes('drama') || name.includes('music') || name.includes('photography') || name.includes('dance') || name.includes('literary') || bio.includes('cultural');
+                    } else if (currentFilter === 'sports') {
+                        return name.includes('sports') || name.includes('fitness') || name.includes('cricket') || name.includes('football') || bio.includes('sports');
+                    }
+                    return true;
+                });
+            }
+            
+            const clubDiv = document.getElementById('club-list');
+            
+            if (filteredClubs.length === 0) {
+                clubDiv.innerHTML = `
+                    <div class="empty-state">
+                        <i>🔍</i>
+                        <p>No clubs found in this category</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            clubDiv.innerHTML = filteredClubs.map(club => {
+                const isMember = joinedClubIds.includes(club.club_id);
+                const memberCount = club.member_count || 0;
+                
+                return `
+                    <div class="card">
+                        <div class="club-header">
+                            <span class="club-name">${club.cname}</span>
+                            ${isMember ? 
+                                '<span class="member-badge">✓ Member</span>' : 
+                                ''
+                            }
+                        </div>
+                        
+                        <div class="club-bio">${club.bio || 'No description available.'}</div>
+                        
+                        <div class="club-stats">
+                            <span>👥 ${memberCount} members</span>
+                            <span>📅 ${club.event_count || 0} events</span>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <button class="button small" onclick="viewClub(${club.club_id})">
+                                🔍 View Club
+                            </button>
+                            ${!isMember ? 
+                                `<button class="button secondary small" onclick="joinClub(${club.club_id})">
+                                    ➕ Join
+                                </button>` : 
+                                ''
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Search functionality
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (query.length < 2) {
+                resultsDiv.classList.remove('active');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/search?q=${encodeURIComponent(query)}`);
+                if (!response.ok) throw new Error('Search failed');
+                
+                const data = await response.json();
+                displaySearchResults(data);
+            } catch (error) {
+                console.error('Search error:', error);
+            }
+        }
+
+        // Display search results
+        function displaySearchResults(data) {
+            const resultsDiv = document.getElementById('searchResults');
+            const hasResults = data.clubs.length > 0 || data.events.length > 0 || data.users.length > 0;
+            
+            if (!hasResults) {
+                resultsDiv.innerHTML = `
+                    <div class="search-no-results">
+                        <p>No results found for "${document.getElementById('searchInput').value}"</p>
+                    </div>
+                `;
+                resultsDiv.classList.add('active');
+                return;
+            }
+
+            let html = '';
+
+            // Clubs section
+            if (data.clubs.length > 0) {
+                html += '<div class="search-category">📚 Clubs</div>';
+                data.clubs.forEach(club => {
+                    html += `
+                        <div class="search-item" onclick="viewClub(${club.club_id})">
+                            <div class="search-item-icon">📚</div>
+                            <div class="search-item-info">
+                                <div class="search-item-title">${club.name}</div>
+                                <div class="search-item-subtitle">${club.description || 'No description'}</div>
+                            </div>
+                            <span class="search-item-type">Club</span>
+                        </div>
+                    `;
+                });
+            }
+
+            // Events section
+            if (data.events.length > 0) {
+                html += '<div class="search-category">📅 Events</div>';
+                data.events.forEach(event => {
+                    html += `
+                        <div class="search-item" onclick="showEventDetails(${event.event_id})">
+                            <div class="search-item-icon">📅</div>
+                            <div class="search-item-info">
+                                <div class="search-item-title">${event.name}</div>
+                                <div class="search-item-subtitle">${event.description || 'No description'}</div>
+                            </div>
+                            <span class="search-item-type">Event</span>
+                        </div>
+                    `;
+                });
+            }
+
+            // Users section
+            if (data.users.length > 0) {
+                html += '<div class="search-category">👥 Users</div>';
+                data.users.forEach(user => {
+                    const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
+                    html += `
+                        <div class="search-item" onclick="viewProfile(${user.user_id})">
+                            <div class="search-item-avatar">${initials}</div>
+                            <div class="search-item-info">
+                                <div class="search-item-title">${user.name}</div>
+                                <div class="search-item-subtitle">${user.description || 'Student'}</div>
+                            </div>
+                            <span class="search-item-type">User</span>
+                        </div>
+                    `;
+                });
+            }
+
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.add('active');
+        }
+
+        // Close search results when clicking outside
+        document.addEventListener('click', function(event) {
+            const searchContainer = document.querySelector('.search-container');
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (!searchContainer.contains(event.target)) {
+                resultsDiv.classList.remove('active');
+            }
+        });
+
+        // Live search with debounce
+        document.getElementById('searchInput').addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(performSearch, 300);
+        });
+
+        // Search on enter key
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // Load main data
+        async function loadData() {
+            try {
+                // Show loading states
+                document.getElementById('club-list').innerHTML = '<div class="loading">Loading clubs...</div>';
+                document.getElementById('event-list').innerHTML = '<div class="loading">Loading events...</div>';
+                document.getElementById('joined-clubs-activities').innerHTML = '<div class="loading">Loading your activities...</div>';
+                
+                // Fetch all data in parallel
+                const [clubsRes, eventsRes, membershipRes, statsRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/clubs`),
+                    fetch(`${API_BASE_URL}/events`),
+                    fetch(`${API_BASE_URL}/user-memberships/${currentUserId}`),
+                    fetch(`${API_BASE_URL}/stats/${currentUserId}`)
+                ]);
+
+                if (!clubsRes.ok || !eventsRes.ok || !membershipRes.ok || !statsRes.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+
+                allClubs = await clubsRes.json();
+                allEvents = await eventsRes.json();
+                joinedClubIds = await membershipRes.json();
+                const stats = await statsRes.json();
+
+                // Update counts
+                document.getElementById('clubCount').textContent = `(${allClubs.length} total)`;
+                document.getElementById('eventCount').textContent = `(${allEvents.length} upcoming)`;
+                document.getElementById('activityCount').textContent = `(${joinedClubIds.length} clubs)`;
+                
+                // Update stats
+                document.getElementById('statClubs').textContent = stats.totalClubs || allClubs.length;
+                document.getElementById('statEvents').textContent = stats.totalEvents || allEvents.length;
+                document.getElementById('statJoined').textContent = stats.joinedClubs || joinedClubIds.length;
+                document.getElementById('statUpcoming').textContent = stats.upcomingEvents || 0;
+
+                // Render clubs with filter
+                renderClubs();
+
+                // Render events
+                const eventDiv = document.getElementById('event-list');
+                
+                if (allEvents.length === 0) {
+                    eventDiv.innerHTML = `
+                        <div class="empty-state">
+                            <i>📅</i>
+                            <p>No upcoming events</p>
+                        </div>
+                    `;
+                } else {
+                    // Check registration status for each event
+                    const eventsWithRegistration = await Promise.all(
+                        allEvents.slice(0, 5).map(async (event) => {
+                            const isRegistered = await checkEventRegistration(event.event_id);
+                            return { ...event, isRegistered };
+                        })
+                    );
+                    
+                    eventDiv.innerHTML = eventsWithRegistration.map(event => {
+                        const eventDate = new Date(event.date_time);
+                        const organizer = event.club_name || event.fest_name || 'Campus';
+                        
+                        return `
+                            <div class="card">
+                                <span class="event-tag">${organizer}</span>
+                                <div class="event-title">
+                                    ${event.title}
+                                    ${event.isRegistered ? '<span class="registration-badge">Registered</span>' : ''}
+                                </div>
+                                <div class="event-details">
+                                    <span>📅 ${eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                    <span>⏰ ${eventDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                                    <span>📍 ${event.venue || 'TBA'}</span>
+                                </div>
+                                <div class="event-actions">
+                                    <button class="button small" onclick="showEventDetails(${event.event_id})">
+                                        🔍 Details
+                                    </button>
+                                    ${!event.isRegistered ? 
+                                        `<button class="button secondary small" onclick="registerForEvent(${event.event_id})">
+                                            📝 Register
+                                        </button>` : 
+                                        `<button class="button danger small" onclick="cancelEventRegistration(${event.event_id})">
+                                            ❌ Cancel
+                                        </button>`
+                                    }
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                // Render joined clubs activities
+                const joinedClubs = allClubs.filter(club => joinedClubIds.includes(club.club_id));
+                const activitiesDiv = document.getElementById('joined-clubs-activities');
+                
+                if (joinedClubs.length === 0) {
+                    activitiesDiv.innerHTML = `
+                        <div class="empty-state">
+                            <i>🔍</i>
+                            <p>You haven't joined any clubs yet.</p>
+                            <p style="font-size: 14px; margin-top: 10px;">Explore clubs above and join to see activities!</p>
+                        </div>
+                    `;
+                } else {
+                    // Fetch activities for joined clubs
+                    try {
+                        const activitiesPromises = joinedClubs.map(club => 
+                            fetch(`${API_BASE_URL}/club-activities/${club.club_id}`).then(res => res.json())
+                        );
+                        
+                        const allActivitiesArrays = await Promise.all(activitiesPromises);
+                        
+                        // Flatten and sort by date
+                        const allClubActivities = allActivitiesArrays
+                            .flat()
+                            .filter(activity => new Date(activity.date_time) > new Date())
+                            .sort((a, b) => new Date(a.date_time) - new Date(b.date_time))
+                            .slice(0, 5);
+                        
+                        if (allClubActivities.length === 0) {
+                            activitiesDiv.innerHTML = `
+                                <div class="empty-state">
+                                    <i>📅</i>
+                                    <p>No upcoming activities in your joined clubs.</p>
+                                </div>
+                            `;
+                        } else {
+                            activitiesDiv.innerHTML = allClubActivities.map(activity => {
+                                const club = joinedClubs.find(c => c.club_id === activity.club_id);
+                                return `
+                                    <div class="card">
+                                        <span class="event-tag">${club ? club.cname : 'Club Activity'}</span>
+                                        <div class="event-title">${activity.title}</div>
+                                        <div class="event-details">
+                                            <span>📅 ${new Date(activity.date_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                            <span>⏰ ${new Date(activity.date_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                                        </div>
+                                        <button class="button small" onclick="showEventDetails(${activity.event_id})" style="margin-top: 10px;">
+                                            View Details
+                                        </button>
+                                    </div>
+                                `;
+                            }).join('');
+                        }
+                    } catch (error) {
+                        console.error('Error fetching activities:', error);
+                        activitiesDiv.innerHTML = '<div class="empty-state">Failed to load activities</div>';
+                    }
+                }
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                document.getElementById('club-list').innerHTML = 
+                    '<div class="empty-state">❌ Failed to load clubs. Please check your connection.</div>';
+                document.getElementById('event-list').innerHTML = 
+                    '<div class="empty-state">❌ Failed to load events.</div>';
+                document.getElementById('joined-clubs-activities').innerHTML = 
+                    '<div class="empty-state">❌ Failed to load activities.</div>';
+                showNotification('Failed to load dashboard data', 'error');
+            }
+        }
+
+        // Initialize filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => filterClubs(btn.dataset.filter));
+        });
+
+        // Load initial data
+        async function initialize() {
+            await loadUserProfile();
+            await loadData();
+        }
+
+        // Auto-refresh data every 30 seconds
+        setInterval(loadData, 30000);
+
+        // Load initial data
+        window.onload = initialize;
+    </script>
+</body>
+</html>

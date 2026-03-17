@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Smart Campus</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .signup-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            border: 2px solid #eef2f6;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input.error, select.error, textarea.error {
+            border-color: #ff4757;
+        }
+
+        .error-message {
+            color: #ff4757;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .password-strength {
+            margin-top: 8px;
+            height: 4px;
+            background: #eef2f6;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .strength-bar {
+            height: 100%;
+            width: 0;
+            transition: all 0.3s;
+        }
+
+        .strength-bar.weak {
+            width: 33.33%;
+            background: #ff4757;
+        }
+
+        .strength-bar.medium {
+            width: 66.66%;
+            background: #ffa502;
+        }
+
+        .strength-bar.strong {
+            width: 100%;
+            background: #26de81;
+        }
+
+        .strength-text {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #666;
+        }
+
+        .terms {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .terms input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .terms a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .terms a:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            max-width: 350px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification.success {
+            background: #26de81;
+        }
+
+        .notification.error {
+            background: #ff4757;
+        }
+
+        .notification.info {
+            background: #667eea;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .optional-field {
+            position: relative;
+        }
+
+        .optional-badge {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            padding: 2px 6px;
+            background: #eef2f6;
+            border-radius: 10px;
+            color: #666;
+            pointer-events: none;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+            
+            .header {
+                padding: 30px;
+            }
+            
+            .form-container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="signup-card">
+            <div class="header">
+                <div class="logo">🎓</div>
+                <h1>Create Account</h1>
+                <p>Join the Smart Campus community</p>
+            </div>
+
+            <div class="form-container">
+                <form onsubmit="event.preventDefault(); handleSignup();" id="signupForm">
+                    <div class="form-grid">
+                        <!-- First Name -->
+                        <div class="form-group">
+                            <label>First Name *</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">👤</span>
+                                <input type="text" id="fname" placeholder="John" required>
+                            </div>
+                            <div class="error-message" id="error-fname"></div>
+                        </div>
+
+                        <!-- Last Name -->
+                        <div class="form-group">
+                            <label>Last Name *</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">👤</span>
+                                <input type="text" id="lname" placeholder="Doe" required>
+                            </div>
+                            <div class="error-message" id="error-lname"></div>
+                        </div>
+
+                        <!-- Roll Number -->
+                        <div class="form-group full-width">
+                            <label>Roll Number *</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🆔</span>
+                                <input type="text" id="roll" placeholder="e.g., 21CS01" required>
+                            </div>
+                            <div class="error-message" id="error-roll"></div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="form-group full-width">
+                            <label>Email Address *</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">📧</span>
+                                <input type="email" id="email" placeholder="student@college.edu" required>
+                            </div>
+                            <div class="error-message" id="error-email"></div>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="form-group full-width">
+                            <label>Password *</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🔒</span>
+                                <input type="password" id="pw" placeholder="••••••••" required onkeyup="checkPasswordStrength()">
+                            </div>
+                            <div class="password-strength">
+                                <div class="strength-bar" id="strengthBar"></div>
+                            </div>
+                            <div class="strength-text" id="strengthText">Enter a password</div>
+                            <div class="error-message" id="error-pw"></div>
+                        </div>
+
+                        <!-- Branch/Department -->
+                        <div class="form-group full-width">
+                            <label>Branch/Department *</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🏛️</span>
+                                <select id="dept" required>
+                                    <option value="" disabled selected>Select your department</option>
+                                    <option value="Computer Science">Computer Science</option>
+                                    <option value="Mathematics">Mathematics</option>
+                                    <option value="Physics">Physics</option>
+                                    <option value="Chemistry">Chemistry</option>
+                                    <option value="Humanities">Humanities</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Electrical">Electrical</option>
+                                    <option value="Mechanical">Mechanical</option>
+                                    <option value="Civil">Civil</option>
+                                    <option value="Chemical">Chemical</option>
+                                    <option value="Biotechnology">Biotechnology</option>
+                                </select>
+                            </div>
+                            <div class="error-message" id="error-dept"></div>
+                        </div>
+
+                        <!-- Optional: LinkedIn -->
+                        <div class="form-group optional-field full-width">
+                            <label>LinkedIn Profile (Optional)</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">💼</span>
+                                <input type="url" id="linkedin" placeholder="https://linkedin.com/in/username">
+                                <span class="optional-badge">Optional</span>
+                            </div>
+                        </div>
+
+                        <!-- Optional: GitHub -->
+                        <div class="form-group optional-field full-width">
+                            <label>GitHub Profile (Optional)</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🐙</span>
+                                <input type="url" id="github" placeholder="https://github.com/username">
+                                <span class="optional-badge">Optional</span>
+                            </div>
+                        </div>
+
+                        <!-- Optional: Bio -->
+                        <div class="form-group optional-field full-width">
+                            <label>Short Bio (Optional)</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">📝</span>
+                                <textarea id="bio" placeholder="Tell us a little about yourself..." rows="3" style="padding-top: 12px;"></textarea>
+                                <span class="optional-badge" style="top: 12px; transform: none;">Optional</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="terms">
+                        <input type="checkbox" id="terms" required>
+                        <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn" id="submitBtn">
+                        <span class="btn-text">
+                            <span>Create Account</span>
+                        </span>
+                    </button>
+                </form>
+
+                <div class="login-link">
+                    Already have an account? <a href="login.html">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Password strength checker
+        function checkPasswordStrength() {
+            const password = document.getElementById('pw').value;
+            const strengthBar = document.getElementById('strengthBar');
+            const strengthText = document.getElementById('strengthText');
+            
+            // Remove all classes
+            strengthBar.className = 'strength-bar';
+            
+            if (password.length === 0) {
+                strengthText.textContent = 'Enter a password';
+                return;
+            }
+            
+            // Check strength
+            let strength = 0;
+            
+            // Length check
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
+            
+            // Character variety checks
+            if (/[a-z]/.test(password)) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+            
+            // Update bar based on strength
+            if (strength < 3) {
+                strengthBar.classList.add('weak');
+                strengthText.textContent = 'Weak password';
+            } else if (strength < 5) {
+                strengthBar.classList.add('medium');
+                strengthText.textContent = 'Medium password';
+            } else {
+                strengthBar.classList.add('strong');
+                strengthText.textContent = 'Strong password';
+            }
+        }
+
+        // Validate email format
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        // Validate roll number format (example: 21CS01)
+        function validateRollNumber(roll) {
+            const re = /^[0-9]{4}[A-Z]{2}[0-9]{2}$/;
+            return re.test(roll);
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            // Remove existing notification
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        // Set loading state
+        function setLoading(isLoading) {
+            const btn = document.getElementById('submitBtn');
+            const btnText = btn.querySelector('.btn-text');
+            
+            if (isLoading) {
+                btn.disabled = true;
+                btnText.innerHTML = '<span class="loading"></span> Creating account...';
+            } else {
+                btn.disabled = false;
+                btnText.innerHTML = '<span>Create Account</span>';
+            }
+        }
+
+        // Validate form
+        function validateForm() {
+            let isValid = true;
+            
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.style.display = 'none';
+            });
+            document.querySelectorAll('input, select, textarea').forEach(el => {
+                el.classList.remove('error');
+            });
+            
+            // First Name
+            const fname = document.getElementById('fname').value.trim();
+            if (!fname) {
+                showError('fname', 'First name is required');
+                isValid = false;
+            }
+            
+            // Last Name
+            const lname = document.getElementById('lname').value.trim();
+            if (!lname) {
+                showError('lname', 'Last name is required');
+                isValid = false;
+            }
+            
+            // Roll Number
+            const roll = document.getElementById('roll').value.trim();
+            if (!roll) {
+                showError('roll', 'Roll number is required');
+                isValid = false;
+            } else if (!validateRollNumber(roll)) {
+                showError('roll', 'Invalid roll number format (e.g., 2403mc03)');
+                isValid = false;
+            }
+            
+            // Email
+            const email = document.getElementById('email').value.trim();
+            if (!email) {
+                showError('email', 'Email is required');
+                isValid = false;
+            } else if (!validateEmail(email)) {
+                showError('email', 'Invalid email format');
+                isValid = false;
+            }
+            
+            // Password
+            const password = document.getElementById('pw').value;
+            if (!password) {
+                showError('pw', 'Password is required');
+                isValid = false;
+            } else if (password.length < 6) {
+                showError('pw', 'Password must be at least 6 characters');
+                isValid = false;
+            }
+            
+            // Department
+            const dept = document.getElementById('dept').value;
+            if (!dept) {
+                showError('dept', 'Please select your department');
+                isValid = false;
+            }
+            
+            // Terms
+            const terms = document.getElementById('terms').checked;
+            if (!terms) {
+                showNotification('Please accept the Terms of Service', 'error');
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+
+        // Show error for a field
+        function showError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            const errorEl = document.getElementById(`error-${fieldId}`);
+            
+            if (field) field.classList.add('error');
+            if (errorEl) {
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+            }
+        }
+
+        // Handle signup
+        async function handleSignup() {
+            // Validate form
+            if (!validateForm()) {
+                return;
+            }
+
+            setLoading(true);
+
+            const userData = {
+                roll_no: document.getElementById('roll').value.trim(),
+                email: document.getElementById('email').value.trim().toLowerCase(),
+                password: document.getElementById('pw').value,
+                first_name: document.getElementById('fname').value.trim(),
+                last_name: document.getElementById('lname').value.trim(),
+                branch_dept: document.getElementById('dept').value,
+                linkedin_url: document.getElementById('linkedin').value.trim() || null,
+                github_url: document.getElementById('github').value.trim() || null,
+                bio: document.getElementById('bio').value.trim() || null
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Account created successfully! Redirecting...', 'success');
+                    
+                    // Store user ID for auto-login? (optional)
+                    // localStorage.setItem('userId', result.userId);
+                    
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    setLoading(false);
+                    
+                    // Handle specific errors
+                    if (result.error.includes('Duplicate') || result.error.includes('already exists')) {
+                        if (result.error.includes('Roll')) {
+                            showError('roll', 'This roll number is already registered');
+                        } else if (result.error.includes('Email')) {
+                            showError('email', 'This email is already registered');
+                        }
+                    }
+                    
+                    showNotification(result.error || 'Signup failed', 'error');
+                }
+            } catch (error) {
+                setLoading(false);
+                console.error('Signup error:', error);
+                
+                if (!navigator.onLine) {
+                    showNotification('No internet connection. Please check your network.', 'error');
+                } else {
+                    showNotification('Server error. Please try again later.', 'error');
+                }
+            }
+        }
+
+        // Add input event listeners for real-time validation
+        document.getElementById('email').addEventListener('input', function() {
+            const errorEl = document.getElementById('error-email');
+            if (this.classList.contains('error')) {
+                this.classList.remove('error');
+                errorEl.style.display = 'none';
+            }
+        });
+
+        document.getElementById('roll').addEventListener('input', function() {
+            const errorEl = document.getElementById('error-roll');
+            if (this.classList.contains('error')) {
+                this.classList.remove('error');
+                errorEl.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
