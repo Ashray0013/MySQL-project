@@ -2,6 +2,9 @@ const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_jwt_key';
 
 const app = express();
 app.use(cors({ origin: 'http://127.0.0.1:5500', credentials: true }));
@@ -9,25 +12,62 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Database connection
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'root',
-    database: 'campus',
-    multipleStatements: true
+// const db = mysql.createConnection({
+//     host: '0.0.0.0',
+//     user: 'root',
+//     password: 'root',
+//     database: 'campus',
+//     multipleStatements: true
+// });
+
+require('dotenv').config();
+const db = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
 });
 
-db.connect(err => {
+db.getConnection((err, connection) => {
     if (err) {
         return console.error('Error connecting to the database:', err.stack);
     } else {
-        console.log('Connected to the database.');
+        console.log('Connected to the database via pool.');
+        connection.release();
     }
 });
+
+const dbPromise = db.promise();
 
 const saltRounds = 10;
 
 // ==================== AUTHENTICATION ENDPOINTS ====================
+
+function authenticate(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ error: 'Invalid token' });
+        req.user = user;
+        next();
+    });
+}
+
+const publicRoutes = ['/api/signup', '/api/login', '/api/health', '/api/search'];
+app.use((req, res, next) => {
+    if (
+        publicRoutes.includes(req.path) ||
+        req.path.startsWith('/api/stats/') ||
+        req.path.startsWith('/api/visit-profile/') ||
+        req.path === '/api/fests' ||
+        req.method === 'OPTIONS'
+    ) {
+        return next();
+    }
+    if (req.path === '/api/do-nothing') return next();
+    authenticate(req, res, next);
+});
 
 // Signup endpoint
 app.post('/api/signup', async (req, res) => {
@@ -38,7 +78,7 @@ app.post('/api/signup', async (req, res) => {
 
         const sql = `INSERT INTO users (roll_no, email, password_hash, first_name, last_name, branch_dept, linkedin_url, github_url, bio) 
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-        
+
         db.query(sql, [roll_no, email, hashedPassword, first_name, last_name, branch_dept, linkedin_url, github_url, bio], (err, result) => {
             if (err) {
                 if (err.code === 'ER_DUP_ENTRY') {
@@ -46,9 +86,11 @@ app.post('/api/signup', async (req, res) => {
                 }
                 return res.status(500).json({ error: err.message });
             }
-            res.status(201).json({ 
+            const token = jwt.sign({ id: result.insertId, email: email }, JWT_SECRET, { expiresIn: '7d' });
+            res.status(201).json({
                 message: "Account created successfully!",
-                userId: result.insertId 
+                userId: result.insertId,
+                token
             });
         });
     } catch (error) {
@@ -69,14 +111,16 @@ app.post('/api/login', (req, res) => {
         const match = await bcrypt.compare(password, user.password_hash);
 
         if (match) {
-            res.json({ 
-                message: "Login successful!", 
-                user: { 
-                    id: user.user_id, 
-                    name: user.first_name, 
+            const token = jwt.sign({ id: user.user_id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+            res.json({
+                message: "Login successful!",
+                token,
+                user: {
+                    id: user.user_id,
+                    name: user.first_name,
                     roll: user.roll_no,
                     email: user.email
-                } 
+                }
             });
         } else {
             res.status(401).json({ error: "Incorrect password" });
@@ -87,69 +131,64 @@ app.post('/api/login', (req, res) => {
 // ==================== USER ENDPOINTS ====================
 
 // Get user profile with additional info
-app.get('/api/profile/:userId', (req, res) => {
+app.get('/api/profile/:userId', async (req, res) => {
     const { userId } = req.params;
-    
+
     const userSql = "SELECT user_id, roll_no, email, first_name, last_name, branch_dept, linkedin_url, github_url, bio, created_at FROM users WHERE user_id = ?";
-    
-    db.query(userSql, [userId], (err, userResults) => {
-        if (err) return res.status(500).json({ error: err.message });
-        if (userResults.length === 0) return res.status(404).json({ error: "User not found" });
-        
-        const user = userResults[0];
-        
-        const clubsSql = `
-            SELECT c.*, cm.position, cm.joined_date 
-            FROM clubs c 
-            JOIN club_members cm ON c.club_id = cm.club_id 
-            WHERE cm.user_id = ?
-        `;
-        
-        db.query(clubsSql, [userId], (err, clubsResults) => {
-            if (err) return res.status(500).json({ error: err.message });
-            
-            const eventsSql = `
-                SELECT DISTINCT e.*, c.cname as club_name, f.fname as fest_name,
-                    CASE 
-                        WHEN e.date_time > NOW() THEN 'upcoming'
-                        ELSE 'past'
-                    END as event_status,
-                    CASE WHEN er.registration_id IS NOT NULL THEN true ELSE false END as is_registered
-                FROM events e
-                LEFT JOIN clubs c ON e.club_id = c.club_id
-                LEFT JOIN fests f ON e.fest_id = f.fest_id
-                LEFT JOIN club_members cm ON e.club_id = cm.club_id
-                LEFT JOIN event_registrations er ON e.event_id = er.event_id AND er.user_id = ?
-                WHERE cm.user_id = ? OR er.user_id = ?
-                GROUP BY e.event_id
-                ORDER BY e.date_time DESC
-                LIMIT 10
-            `;
-            
-            db.query(eventsSql, [userId, userId, userId], (err, eventsResults) => {
-                if (err) return res.status(500).json({ error: err.message });
-                
-                res.json({
-                    ...user,
-                    clubs: clubsResults,
-                    events: eventsResults,
-                    club_count: clubsResults.length,
-                    event_count: eventsResults.length
-                });
-            });
+    const clubsSql = `
+        SELECT c.*, cm.position, cm.joined_date 
+        FROM clubs c 
+        JOIN club_members cm ON c.club_id = cm.club_id 
+        WHERE cm.user_id = ?
+    `;
+    const eventsSql = `
+        SELECT DISTINCT e.*, c.cname as club_name, f.fname as fest_name,
+            CASE 
+                WHEN e.date_time > NOW() THEN 'upcoming'
+                ELSE 'past'
+            END as event_status,
+            CASE WHEN er.registration_id IS NOT NULL THEN true ELSE false END as is_registered
+        FROM events e
+        LEFT JOIN clubs c ON e.club_id = c.club_id
+        LEFT JOIN fests f ON e.fest_id = f.fest_id
+        LEFT JOIN club_members cm ON e.club_id = cm.club_id
+        LEFT JOIN event_registrations er ON e.event_id = er.event_id AND er.user_id = ?
+        WHERE cm.user_id = ? OR er.user_id = ?
+        GROUP BY e.event_id
+        ORDER BY e.date_time DESC
+        LIMIT 10
+    `;
+
+    try {
+        const [[users], [clubs], [events]] = await Promise.all([
+            dbPromise.query(userSql, [userId]),
+            dbPromise.query(clubsSql, [userId]),
+            dbPromise.query(eventsSql, [userId, userId, userId])
+        ]);
+
+        if (users.length === 0) return res.status(404).json({ error: "User not found" });
+
+        res.json({
+            ...users[0],
+            clubs: clubs,
+            events: events,
+            club_count: clubs.length,
+            event_count: events.length
         });
-    });
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
 });
 
 // Update user profile
 app.put('/api/profile/:userId', (req, res) => {
     const { userId } = req.params;
     const { first_name, last_name, branch_dept, linkedin_url, github_url, bio } = req.body;
-    
+
     const sql = `UPDATE users 
                  SET first_name = ?, last_name = ?, branch_dept = ?, linkedin_url = ?, github_url = ?, bio = ? 
                  WHERE user_id = ?`;
-    
+
     db.query(sql, [first_name, last_name, branch_dept, linkedin_url, github_url, bio, userId], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ message: "Profile updated successfully!" });
@@ -246,7 +285,7 @@ app.get('/api/club-activities/:clubId', (req, res) => {
         GROUP BY e.event_id
         ORDER BY e.date_time ASC
     `;
-    
+
     db.query(sql, [clubId], (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(results);
@@ -256,7 +295,7 @@ app.get('/api/club-activities/:clubId', (req, res) => {
 // Export club data (for coordinators)
 app.get('/api/clubs/:clubId/export', (req, res) => {
     const clubId = req.params.clubId;
-    
+
     const clubSql = "SELECT * FROM clubs WHERE club_id = ?";
     const membersSql = `
         SELECT u.user_id, u.first_name, u.last_name, u.roll_no, u.email, u.branch_dept, cm.position, cm.joined_date
@@ -271,23 +310,23 @@ app.get('/api/clubs/:clubId/export', (req, res) => {
         WHERE e.club_id = ?
         GROUP BY e.event_id
     `;
-    
+
     db.query(clubSql, [clubId], (err, clubResults) => {
         if (err) return res.status(500).json({ error: err.message });
-        
+
         db.query(membersSql, [clubId], (err, membersResults) => {
             if (err) return res.status(500).json({ error: err.message });
-            
+
             db.query(eventsSql, [clubId], (err, eventsResults) => {
                 if (err) return res.status(500).json({ error: err.message });
-                
+
                 const exportData = {
                     club: clubResults[0],
                     members: membersResults,
                     events: eventsResults,
                     exported_at: new Date().toISOString()
                 };
-                
+
                 res.json(exportData);
             });
         });
@@ -305,14 +344,14 @@ app.get('/api/do-nothing', (req, res) => {
 // Create new event (for coordinators and sub-coordinators)
 app.post('/api/events', (req, res) => {
     console.log("Create Event Request Body:", req.body);
-    
-    const { 
-        title, 
-        about_event, 
-        date_time, 
-        venue, 
+
+    const {
+        title,
+        about_event,
+        date_time,
+        venue,
         club_id,
-        created_by 
+        created_by
     } = req.body;
 
     // Validate required fields
@@ -341,11 +380,11 @@ app.post('/api/events', (req, res) => {
             console.error("Permission check error:", err);
             return res.status(500).json({ error: err.message });
         }
-        
+
         if (permissionResults.length === 0) {
             return res.status(403).json({ error: "You don't have permission to create events for this club" });
         }
-        
+
         // Proceed with event creation
         createEvent();
     });
@@ -354,12 +393,12 @@ app.post('/api/events', (req, res) => {
         const sql = `INSERT INTO events 
                      (title, about_event, date_time, venue, club_id) 
                      VALUES (?, ?, ?, ?, ?)`;
-        
+
         const params = [
-            title, 
-            about_event || null, 
-            date_time, 
-            venue || null, 
+            title,
+            about_event || null,
+            date_time,
+            venue || null,
             club_id
         ];
 
@@ -370,10 +409,10 @@ app.post('/api/events', (req, res) => {
                 console.error("Error creating event:", err);
                 return res.status(500).json({ error: err.message });
             }
-            
-            res.status(201).json({ 
+
+            res.status(201).json({
                 message: "Event created successfully!",
-                event_id: result.insertId 
+                event_id: result.insertId
             });
         });
     }
@@ -383,13 +422,13 @@ app.post('/api/events', (req, res) => {
 app.put('/api/events/:eventId', (req, res) => {
     const eventId = req.params.eventId;
     console.log("Update Event Request:", { eventId, body: req.body });
-    
-    const { 
-        title, 
-        about_event, 
-        date_time, 
-        venue, 
-        userId 
+
+    const {
+        title,
+        about_event,
+        date_time,
+        venue,
+        userId
     } = req.body;
 
     if (!title || !date_time) {
@@ -410,26 +449,26 @@ app.put('/api/events/:eventId', (req, res) => {
         if (eventResults.length === 0) {
             return res.status(404).json({ error: "Event not found" });
         }
-        
+
         const club_id = eventResults[0].club_id;
-        
+
         // Check permission if it's a club event
         if (club_id) {
             const checkPermissionSql = `
                 SELECT position FROM club_members 
                 WHERE club_id = ? AND user_id = ? AND position IN ('Coordinator', 'Sub-Coordinator')
             `;
-            
+
             db.query(checkPermissionSql, [club_id, userId], (err, permissionResults) => {
                 if (err) {
                     console.error("Permission check error:", err);
                     return res.status(500).json({ error: err.message });
                 }
-                
+
                 if (permissionResults.length === 0) {
                     return res.status(403).json({ error: "You don't have permission to edit this event" });
                 }
-                
+
                 updateEvent();
             });
         } else {
@@ -442,11 +481,11 @@ app.put('/api/events/:eventId', (req, res) => {
         const sql = `UPDATE events 
                      SET title = ?, about_event = ?, date_time = ?, venue = ?
                      WHERE event_id = ?`;
-        
+
         const params = [
-            title, 
-            about_event || null, 
-            date_time, 
+            title,
+            about_event || null,
+            date_time,
             venue || null,
             eventId
         ];
@@ -458,11 +497,11 @@ app.put('/api/events/:eventId', (req, res) => {
                 console.error("Error updating event:", err);
                 return res.status(500).json({ error: err.message });
             }
-            
+
             if (result.affectedRows === 0) {
                 return res.status(404).json({ error: "Event not found" });
             }
-            
+
             res.json({ message: "Event updated successfully!" });
         });
     }
@@ -493,26 +532,26 @@ app.delete('/api/events/:eventId', (req, res) => {
         if (eventResults.length === 0) {
             return res.status(404).json({ error: "Event not found" });
         }
-        
+
         const club_id = eventResults[0].club_id;
-        
+
         // If it's a club event, check if user is coordinator
         if (club_id) {
             const checkPermissionSql = `
                 SELECT position FROM club_members 
                 WHERE club_id = ? AND user_id = ? AND position = 'Coordinator'
             `;
-            
+
             db.query(checkPermissionSql, [club_id, userId], (err, permissionResults) => {
                 if (err) {
                     console.error("Permission check error:", err);
                     return res.status(500).json({ error: err.message });
                 }
-                
+
                 if (permissionResults.length === 0) {
                     return res.status(403).json({ error: "Only coordinators can delete events" });
                 }
-                
+
                 // Proceed with deletion
                 performDelete();
             });
@@ -530,7 +569,7 @@ app.delete('/api/events/:eventId', (req, res) => {
                 console.error("Error deleting registrations:", err);
                 // Continue even if error (table might not exist)
             }
-            
+
             // Then delete the event
             const deleteEventSql = "DELETE FROM events WHERE event_id = ?";
             db.query(deleteEventSql, [eventId], (err, result) => {
@@ -538,11 +577,11 @@ app.delete('/api/events/:eventId', (req, res) => {
                     console.error("Error deleting event:", err);
                     return res.status(500).json({ error: err.message });
                 }
-                
+
                 if (result.affectedRows === 0) {
                     return res.status(404).json({ error: "Event not found" });
                 }
-                
+
                 console.log("Event deleted successfully:", eventId);
                 res.json({ message: "Event deleted successfully!" });
             });
@@ -582,7 +621,7 @@ app.get('/api/events', (req, res) => {
 app.get('/api/events/:eventId', (req, res) => {
     const eventId = req.params.eventId;
     console.log("Fetching event details for ID:", eventId);
-    
+
     const sql = `
         SELECT e.*, 
                c.cname as club_name, c.bio as club_bio,
@@ -595,7 +634,7 @@ app.get('/api/events/:eventId', (req, res) => {
         WHERE e.event_id = ?
         GROUP BY e.event_id
     `;
-    
+
     db.query(sql, [eventId], (err, results) => {
         if (err) {
             console.error("Error fetching event details:", err);
@@ -604,7 +643,7 @@ app.get('/api/events/:eventId', (req, res) => {
         if (results.length === 0) {
             return res.status(404).json({ error: "Event not found" });
         }
-        
+
         // Get registration list with user details
         const regSql = `
             SELECT u.user_id, u.first_name, u.last_name, u.roll_no, u.email, u.branch_dept,
@@ -614,13 +653,13 @@ app.get('/api/events/:eventId', (req, res) => {
             WHERE er.event_id = ?
             ORDER BY er.registered_at DESC
         `;
-        
+
         db.query(regSql, [eventId], (err, regResults) => {
             if (err) {
                 console.error("Error fetching registrations:", err);
                 return res.status(500).json({ error: err.message });
             }
-            
+
             res.json({
                 ...results[0],
                 registrations: regResults
@@ -633,7 +672,7 @@ app.get('/api/events/:eventId', (req, res) => {
 app.get('/api/events/:eventId/registrations', (req, res) => {
     const eventId = req.params.eventId;
     console.log("Fetching registrations for event ID:", eventId);
-    
+
     const sql = `
         SELECT u.user_id, u.first_name, u.last_name, u.roll_no, u.email, u.branch_dept,
                er.registered_at, er.attendance_status
@@ -642,7 +681,7 @@ app.get('/api/events/:eventId/registrations', (req, res) => {
         WHERE er.event_id = ?
         ORDER BY er.registered_at DESC
     `;
-    
+
     db.query(sql, [eventId], (err, results) => {
         if (err) {
             console.error("Error fetching registrations:", err);
@@ -656,7 +695,7 @@ app.get('/api/events/:eventId/registrations', (req, res) => {
 app.get('/api/events/club/:clubId', (req, res) => {
     const clubId = req.params.clubId;
     console.log("Fetching events for club ID:", clubId);
-    
+
     const sql = `
         SELECT e.*, COUNT(er.registration_id) as registered_count
         FROM events e
@@ -665,7 +704,7 @@ app.get('/api/events/club/:clubId', (req, res) => {
         GROUP BY e.event_id
         ORDER BY e.date_time ASC
     `;
-    
+
     db.query(sql, [clubId], (err, results) => {
         if (err) {
             console.error("Error fetching club events:", err);
@@ -679,7 +718,7 @@ app.get('/api/events/club/:clubId', (req, res) => {
 app.get('/api/events/fest/:festId', (req, res) => {
     const festId = req.params.festId;
     console.log("Fetching events for fest ID:", festId);
-    
+
     const sql = `
         SELECT e.*, COUNT(er.registration_id) as registered_count
         FROM events e
@@ -688,7 +727,7 @@ app.get('/api/events/fest/:festId', (req, res) => {
         GROUP BY e.event_id
         ORDER BY e.date_time ASC
     `;
-    
+
     db.query(sql, [festId], (err, results) => {
         if (err) {
             console.error("Error fetching fest events:", err);
@@ -702,7 +741,7 @@ app.get('/api/events/fest/:festId', (req, res) => {
 app.get('/api/user-events/:userId', (req, res) => {
     const userId = req.params.userId;
     console.log("Fetching events for user ID:", userId);
-    
+
     const sql = `
         SELECT DISTINCT e.*, c.cname as club_name, f.fname as fest_name,
                CASE 
@@ -720,7 +759,7 @@ app.get('/api/user-events/:userId', (req, res) => {
         GROUP BY e.event_id
         ORDER BY e.date_time DESC
     `;
-    
+
     db.query(sql, [userId, userId, userId], (err, results) => {
         if (err) {
             console.error("Error fetching user events:", err);
@@ -738,7 +777,7 @@ app.post('/api/events/register', (req, res) => {
     if (!userId || !eventId) {
         return res.status(400).json({ error: "User ID and Event ID are required" });
     }
-    
+
     // Check if event exists
     const checkEventSql = "SELECT * FROM events WHERE event_id = ?";
     db.query(checkEventSql, [eventId], (err, eventResults) => {
@@ -749,7 +788,7 @@ app.post('/api/events/register', (req, res) => {
         if (eventResults.length === 0) {
             return res.status(404).json({ error: "Event not found" });
         }
-        
+
         // Check if already registered
         const checkRegSql = "SELECT * FROM event_registrations WHERE user_id = ? AND event_id = ?";
         db.query(checkRegSql, [userId, eventId], (err, regResults) => {
@@ -757,11 +796,11 @@ app.post('/api/events/register', (req, res) => {
                 console.error("Error checking registration:", err);
                 return res.status(500).json({ error: err.message });
             }
-            
+
             if (regResults.length > 0) {
                 return res.status(400).json({ error: "Already registered for this event" });
             }
-            
+
             // Insert registration
             const sql = "INSERT INTO event_registrations (user_id, event_id, registered_at) VALUES (?, ?, NOW())";
             db.query(sql, [userId, eventId], (err, result) => {
@@ -769,8 +808,8 @@ app.post('/api/events/register', (req, res) => {
                     console.error("Error inserting registration:", err);
                     return res.status(500).json({ error: err.message });
                 }
-                
-                res.json({ 
+
+                res.json({
                     message: "Successfully registered for event!",
                     registration_id: result.insertId
                 });
@@ -787,18 +826,18 @@ app.delete('/api/register', (req, res) => {
     if (!userId || !eventId) {
         return res.status(400).json({ error: "User ID and Event ID are required" });
     }
-    
+
     const sql = "DELETE FROM event_registrations WHERE user_id = ? AND event_id = ?";
     db.query(sql, [userId, eventId], (err, result) => {
         if (err) {
             console.error("Error canceling registration:", err);
             return res.status(500).json({ error: err.message });
         }
-        
+
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: "Registration not found" });
         }
-        
+
         res.json({ message: "Registration cancelled successfully" });
     });
 });
@@ -819,11 +858,11 @@ app.put('/api/events/attendance', (req, res) => {
         if (eventResults.length === 0) return res.status(404).json({ error: "Event not found" });
 
         const club_id = eventResults[0].club_id;
-        
+
         const checkCoordinatorSql = "SELECT position FROM club_members WHERE club_id = ? AND user_id = ? AND position = 'Coordinator'";
         db.query(checkCoordinatorSql, [club_id, updatedBy], (err, results) => {
             if (err) return res.status(500).json({ error: err.message });
-            
+
             if (results.length === 0) {
                 return res.status(403).json({ error: "Only coordinators can update attendance" });
             }
@@ -834,11 +873,11 @@ app.put('/api/events/attendance', (req, res) => {
                     console.error("Error updating attendance:", err);
                     return res.status(500).json({ error: err.message });
                 }
-                
+
                 if (result.affectedRows === 0) {
                     return res.status(404).json({ error: "Registration not found" });
                 }
-                
+
                 res.json({ message: "Attendance status updated successfully!" });
             });
         });
@@ -849,14 +888,14 @@ app.put('/api/events/attendance', (req, res) => {
 app.get('/api/events/check-registration/:userId/:eventId', (req, res) => {
     const { userId, eventId } = req.params;
     console.log("Checking registration:", { userId, eventId });
-    
+
     const sql = "SELECT * FROM event_registrations WHERE user_id = ? AND event_id = ?";
     db.query(sql, [userId, eventId], (err, results) => {
         if (err) {
             console.error("Error checking registration:", err);
             return res.status(500).json({ error: err.message });
         }
-        
+
         res.json({
             is_registered: results.length > 0,
             registration: results[0] || null
@@ -878,7 +917,7 @@ app.get('/api/fests', (req, res) => {
 // Get specific fest details with events
 app.get('/api/fests/:festId', (req, res) => {
     const festId = req.params.festId;
-    
+
     const festSql = "SELECT * FROM fests WHERE fest_id = ?";
     const eventsSql = `
         SELECT e.*, COUNT(er.registration_id) as registered_count
@@ -894,17 +933,17 @@ app.get('/api/fests/:festId', (req, res) => {
         JOIN users u ON fc.user_id = u.user_id
         WHERE fc.fest_id = ?
     `;
-    
+
     db.query(festSql, [festId], (err, festResults) => {
         if (err) return res.status(500).json({ error: err.message });
         if (festResults.length === 0) return res.status(404).json({ error: "Fest not found" });
-        
+
         db.query(eventsSql, [festId], (err, eventsResults) => {
             if (err) return res.status(500).json({ error: err.message });
-            
+
             db.query(coordinatorsSql, [festId], (err, coordResults) => {
                 if (err) return res.status(500).json({ error: err.message });
-                
+
                 res.json({
                     ...festResults[0],
                     events: eventsResults,
@@ -922,7 +961,7 @@ app.get('/api/fests/:festId', (req, res) => {
 app.get('/api/user-memberships/:userId', (req, res) => {
     const userId = req.params.userId;
     const sql = "SELECT club_id FROM club_members WHERE user_id = ?";
-    
+
     db.query(sql, [userId], (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         const membershipIds = results.map(row => row.club_id);
@@ -941,7 +980,7 @@ app.get('/api/user-memberships-detailed/:userId', (req, res) => {
         WHERE cm.user_id = ?
         ORDER BY cm.joined_date DESC
     `;
-    
+
     db.query(sql, [userId], (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(results);
@@ -978,28 +1017,28 @@ app.get('/api/club-members/:clubId', (req, res) => {
 // Join a club
 app.post('/api/joinClub', (req, res) => {
     const { userId, clubId } = req.body;
-    
+
     const checkSql = "SELECT * FROM club_members WHERE club_id = ? AND user_id = ?";
     db.query(checkSql, [clubId, userId], (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
-        
+
         if (results.length > 0) {
             return res.status(400).json({ error: "Already a member of this club" });
         }
 
         const sql = "INSERT INTO club_members (club_id, user_id, position, joined_date) VALUES (?, ?, 'Member', NOW())";
-        
+
         db.query(sql, [clubId, userId], (err, result) => {
             if (err) {
                 console.error("SQL ERROR:", err);
                 return res.status(500).json({ error: err.message });
             }
-            
+
             const clubSql = "SELECT * FROM clubs WHERE club_id = ?";
             db.query(clubSql, [clubId], (err, clubResults) => {
                 if (err) return res.status(500).json({ error: err.message });
-                
-                res.status(201).json({ 
+
+                res.status(201).json({
                     message: "Successfully joined the club!",
                     club: clubResults[0]
                 });
@@ -1013,14 +1052,14 @@ app.delete('/api/leaveClub', (req, res) => {
     const { userId, clubId } = req.body;
 
     const sql = "DELETE FROM club_members WHERE user_id = ? AND club_id = ?";
-    
+
     db.query(sql, [userId, clubId], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
-        
+
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: "Membership not found." });
         }
-        
+
         res.json({ message: "Successfully left the club." });
     });
 });
@@ -1028,24 +1067,24 @@ app.delete('/api/leaveClub', (req, res) => {
 // Update member position (for club coordinators)
 app.put('/api/club-members/position', (req, res) => {
     const { userId, clubId, position, updatedBy } = req.body;
-    
+
     // Check if updater is coordinator
     const checkCoordinatorSql = "SELECT position FROM club_members WHERE club_id = ? AND user_id = ?";
     db.query(checkCoordinatorSql, [clubId, updatedBy], (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
-        
+
         if (results.length === 0 || results[0].position !== 'Coordinator') {
             return res.status(403).json({ error: "Only coordinators can update member positions" });
         }
-        
+
         const sql = "UPDATE club_members SET position = ? WHERE user_id = ? AND club_id = ?";
         db.query(sql, [position, userId, clubId], (err, result) => {
             if (err) return res.status(500).json({ error: err.message });
-            
+
             if (result.affectedRows === 0) {
                 return res.status(404).json({ error: "Membership not found" });
             }
-            
+
             res.json({ message: "Position updated successfully!" });
         });
     });
@@ -1054,11 +1093,11 @@ app.put('/api/club-members/position', (req, res) => {
 // Check if user is member of a club
 app.get('/api/check-membership/:userId/:clubId', (req, res) => {
     const { userId, clubId } = req.params;
-    
+
     const sql = "SELECT * FROM club_members WHERE user_id = ? AND club_id = ?";
     db.query(sql, [userId, clubId], (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
-        
+
         res.json({
             is_member: results.length > 0,
             membership: results[0] || null
@@ -1071,7 +1110,7 @@ app.get('/api/check-membership/:userId/:clubId', (req, res) => {
 // Get dashboard statistics
 app.get('/api/stats/:userId', (req, res) => {
     const userId = req.params.userId;
-    
+
     const stats = {
         totalClubs: 0,
         totalEvents: 0,
@@ -1079,19 +1118,19 @@ app.get('/api/stats/:userId', (req, res) => {
         upcomingEvents: 0,
         registeredEvents: 0
     };
-    
+
     db.query("SELECT COUNT(*) as count FROM clubs", (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         stats.totalClubs = results[0].count;
-        
+
         db.query("SELECT COUNT(*) as count FROM events WHERE date_time > NOW()", (err, results) => {
             if (err) return res.status(500).json({ error: err.message });
             stats.totalEvents = results[0].count;
-            
+
             db.query("SELECT COUNT(*) as count FROM club_members WHERE user_id = ?", [userId], (err, results) => {
                 if (err) return res.status(500).json({ error: err.message });
                 stats.joinedClubs = results[0].count;
-                
+
                 const eventsSql = `
                     SELECT COUNT(*) as count 
                     FROM events e
@@ -1101,12 +1140,12 @@ app.get('/api/stats/:userId', (req, res) => {
                 db.query(eventsSql, [userId], (err, results) => {
                     if (err) return res.status(500).json({ error: err.message });
                     stats.upcomingEvents = results[0].count;
-                    
+
                     const regSql = "SELECT COUNT(*) as count FROM event_registrations WHERE user_id = ?";
                     db.query(regSql, [userId], (err, results) => {
                         if (err) return res.status(500).json({ error: err.message });
                         stats.registeredEvents = results[0].count;
-                        
+
                         res.json(stats);
                     });
                 });
@@ -1121,30 +1160,30 @@ app.get('/api/stats/:userId', (req, res) => {
 app.get('/api/search', (req, res) => {
     const { q } = req.query;
     const searchTerm = `%${q}%`;
-    
+
     const results = {
         clubs: [],
         events: [],
         users: []
     };
-    
+
     db.query(
-        "SELECT club_id, cname as name, bio as description, 'club' as type FROM clubs WHERE cname LIKE ? OR bio LIKE ? LIMIT 5", 
-        [searchTerm, searchTerm], 
+        "SELECT club_id, cname as name, bio as description, 'club' as type FROM clubs WHERE cname LIKE ? OR bio LIKE ? LIMIT 5",
+        [searchTerm, searchTerm],
         (err, clubResults) => {
             if (err) return res.status(500).json({ error: err.message });
             results.clubs = clubResults;
-            
+
             db.query(
-                "SELECT event_id, title as name, about_event as description, 'event' as type FROM events WHERE title LIKE ? OR about_event LIKE ? LIMIT 5", 
-                [searchTerm, searchTerm], 
+                "SELECT event_id, title as name, about_event as description, 'event' as type FROM events WHERE title LIKE ? OR about_event LIKE ? LIMIT 5",
+                [searchTerm, searchTerm],
                 (err, eventResults) => {
                     if (err) return res.status(500).json({ error: err.message });
                     results.events = eventResults;
-                    
+
                     db.query(
-                        "SELECT user_id, CONCAT(first_name, ' ', last_name) as name, roll_no as description, 'user' as type FROM users WHERE first_name LIKE ? OR last_name LIKE ? OR roll_no LIKE ? LIMIT 5", 
-                        [searchTerm, searchTerm, searchTerm], 
+                        "SELECT user_id, CONCAT(first_name, ' ', last_name) as name, roll_no as description, 'user' as type FROM users WHERE first_name LIKE ? OR last_name LIKE ? OR roll_no LIKE ? LIMIT 5",
+                        [searchTerm, searchTerm, searchTerm],
                         (err, userResults) => {
                             if (err) return res.status(500).json({ error: err.message });
                             results.users = userResults;
@@ -1161,7 +1200,7 @@ app.get('/api/search', (req, res) => {
 // Get user profile for public viewing (visit profile)
 app.get('/api/visit-profile/:userId', (req, res) => {
     const { userId } = req.params;
-    
+
     console.log("Visit profile request for user ID:", userId);
 
     // Validate userId
@@ -1176,19 +1215,19 @@ app.get('/api/visit-profile/:userId', (req, res) => {
         FROM users 
         WHERE user_id = ?
     `;
-    
+
     db.query(userSql, [userId], (err, userResults) => {
         if (err) {
             console.error("Error fetching user:", err);
             return res.status(500).json({ error: "Database error" });
         }
-        
+
         if (userResults.length === 0) {
             return res.status(404).json({ error: "User not found" });
         }
-        
+
         const user = userResults[0];
-        
+
         // Get user's club memberships with club details
         const clubsSql = `
             SELECT c.club_id, c.cname, c.bio as club_bio, cm.position, 
@@ -1198,7 +1237,7 @@ app.get('/api/visit-profile/:userId', (req, res) => {
             WHERE cm.user_id = ?
             ORDER BY cm.joined_date DESC
         `;
-        
+
         db.query(clubsSql, [userId], (err, clubsResults) => {
             if (err) {
                 console.error("Error fetching user clubs:", err);
@@ -1215,7 +1254,7 @@ app.get('/api/visit-profile/:userId', (req, res) => {
                     }
                 });
             }
-            
+
             // Get user's events (events they're registered for or from their clubs)
             const eventsSql = `
                 SELECT DISTINCT e.event_id, e.title, e.about_event, e.date_time, e.venue,
@@ -1235,7 +1274,7 @@ app.get('/api/visit-profile/:userId', (req, res) => {
                 ORDER BY e.date_time DESC
                 LIMIT 20
             `;
-            
+
             db.query(eventsSql, [userId, userId, userId, userId], (err, eventsResults) => {
                 if (err) {
                     console.error("Error fetching user events:", err);
@@ -1251,19 +1290,19 @@ app.get('/api/visit-profile/:userId', (req, res) => {
                         }
                     });
                 }
-                
+
                 // Calculate stats
                 const now = new Date();
                 const upcomingEvents = eventsResults.filter(e => new Date(e.date_time) > now);
                 const pastEvents = eventsResults.filter(e => new Date(e.date_time) <= now);
-                
+
                 const stats = {
                     club_count: clubsResults ? clubsResults.length : 0,
                     event_count: eventsResults.length,
                     upcoming_count: upcomingEvents.length,
                     past_count: pastEvents.length
                 };
-                
+
                 // Send combined response
                 res.json({
                     ...user,
@@ -1279,7 +1318,7 @@ app.get('/api/visit-profile/:userId', (req, res) => {
 // ==================== HEALTH CHECK ====================
 
 app.get('/api/health', (req, res) => {
-    db.ping((err) => {
+    db.query('SELECT 1', (err) => {
         if (err) {
             res.status(500).json({ status: 'Database connection failed' });
         } else {

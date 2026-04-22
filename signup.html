@@ -328,6 +328,30 @@
             }
         }
     </style>
+
+  <script>
+    // JWT Fetch Interceptor
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        if (args.length === 1) {
+          args.push({ headers: {} });
+        } else {
+          args[1] = args[1] || {};
+          args[1].headers = args[1].headers || {};
+        }
+        
+        // Handle headers object vs Headers instance
+        if (args[1].headers instanceof Headers) {
+          args[1].headers.append('Authorization', 'Bearer ' + token);
+        } else {
+          args[1].headers['Authorization'] = 'Bearer ' + token;
+        }
+      }
+      return originalFetch(...args);
+    };
+  </script>
 </head>
 <body>
     <div class="container">
